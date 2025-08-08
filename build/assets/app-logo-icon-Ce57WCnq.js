@@ -1,0 +1,1 @@
+import{K as n,j as r}from"./app-xuArFh3K.js";function p(t){const{settings:o}=n().props,a=o.icone_plataforma?`/${o.icone_plataforma}`:"/images/logo-mobile.png";return r.jsx("img",{src:a,alt:o.nome_plataforma||"Logo",...t})}export{p as A};
