@@ -24,6 +24,7 @@
             --green: #1db954;
             --blue: #3a7bd5;
             --red: #e53935;
+            --orange: #f39c12;
             --shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
             --border-radius: 12px;
             --transition-speed: 0.3s;
@@ -37,33 +38,10 @@
         .admin-page.active { display: block; }
 
         /* --- PÁGINA DE LOGIN --- */
-        #login-page {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: var(--bg-dark);
-        }
-        .login-container {
-            background-color: var(--bg-light-dark);
-            padding: 40px;
-            border-radius: var(--border-radius);
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-            box-shadow: var(--shadow);
-        }
-        .login-logo {
-            font-family: 'Poppins', sans-serif;
-            font-size: 2rem;
-            font-weight: 800;
-            color: var(--primary-gold);
-            margin-bottom: 10px;
-        }
-        .login-subtitle {
-            color: var(--text-grey);
-            margin-bottom: 30px;
-        }
+        #login-page { display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: var(--bg-dark); }
+        .login-container { background-color: var(--bg-light-dark); padding: 40px; border-radius: var(--border-radius); width: 90%; max-width: 400px; text-align: center; box-shadow: var(--shadow); }
+        .login-logo { font-family: 'Poppins', sans-serif; font-size: 2rem; font-weight: 800; color: var(--primary-gold); margin-bottom: 10px; }
+        .login-subtitle { color: var(--text-grey); margin-bottom: 30px; }
         .login-container .input-group { position: relative; margin-bottom: 20px; }
         .login-container .input-group i { position: absolute; top: 50%; left: 15px; transform: translateY(-50%); color: var(--text-grey); }
         .login-container .input-group input { width: 100%; padding: 12px 15px 12px 45px; background-color: var(--bg-dark); border: 1px solid #444; border-radius: 8px; color: var(--text-light); font-size: 1rem; }
@@ -73,41 +51,17 @@
         /* --- LAYOUT DO PAINEL --- */
         #admin-panel { display: none; }
         .admin-layout { display: flex; min-height: 100vh; }
-        .sidebar {
-            width: 260px;
-            background-color: var(--bg-light-dark);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-            transition: width 0.3s ease;
-        }
+        .sidebar { width: 260px; background-color: var(--bg-light-dark); padding: 20px; display: flex; flex-direction: column; flex-shrink: 0; transition: width 0.3s ease; }
         .sidebar-header { text-align: center; margin-bottom: 40px; }
         .sidebar-nav { list-style: none; flex-grow: 1; }
-        .sidebar-nav a {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            color: var(--text-grey);
-            text-decoration: none;
-            padding: 15px;
-            border-radius: 8px;
-            font-weight: 600;
-            margin-bottom: 5px;
-            transition: all var(--transition-speed);
-            white-space: nowrap;
-        }
+        .sidebar-nav a { display: flex; align-items: center; gap: 15px; color: var(--text-grey); text-decoration: none; padding: 15px; border-radius: 8px; font-weight: 600; margin-bottom: 5px; transition: all var(--transition-speed); white-space: nowrap; }
         .sidebar-nav a:hover { background-color: #333; color: var(--text-light); }
         .sidebar-nav a.active { background-color: var(--primary-gold); color: var(--bg-dark); }
         .sidebar-nav a i { font-size: 1.2rem; width: 25px; text-align: center; }
         .sidebar-footer a { color: var(--red); }
         .sidebar-footer a:hover { background-color: rgba(229, 57, 53, 0.1); }
         
-        .main-content {
-            flex-grow: 1;
-            padding: 30px;
-            overflow-y: auto;
-        }
+        .main-content { flex-grow: 1; padding: 30px; overflow-y: auto; }
         .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .main-header h1 { font-family: 'Poppins', sans-serif; font-size: 2.2rem; }
         .admin-profile { display: flex; align-items: center; gap: 15px; }
@@ -133,6 +87,7 @@
         .status-badge { padding: 5px 10px; border-radius: 20px; font-weight: 600; font-size: 0.8rem; text-align: center; }
         .status-badge.success { background-color: rgba(29, 185, 84, 0.2); color: var(--green); }
         .status-badge.danger { background-color: rgba(229, 57, 53, 0.2); color: var(--red); }
+        .status-badge.warning { background-color: rgba(243, 156, 18, 0.2); color: var(--orange); }
         .action-buttons button { background: none; border: none; color: var(--text-grey); font-size: 1.1rem; cursor: pointer; margin: 0 5px; }
         .action-buttons button:hover { color: var(--primary-gold); }
         .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background-color var(--transition-speed); }
@@ -150,7 +105,7 @@
         .close-modal-btn { background: none; border: none; color: var(--text-grey); font-size: 1.8rem; cursor: pointer; }
         .form-group { margin-bottom: 15px; text-align: left; }
         .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-grey); }
-        .form-group input { width: 100%; padding: 12px; background-color: var(--bg-dark); border: 1px solid #444; border-radius: 8px; color: var(--text-light); font-size: 1rem; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; background-color: var(--bg-dark); border: 1px solid #444; border-radius: 8px; color: var(--text-light); font-size: 1rem; }
         .modal-footer { margin-top: 20px; text-align: right; }
         
         /* --- ESTILOS PÁGINA DE CONFIGURAÇÕES --- */
@@ -160,7 +115,7 @@
         .image-preview { width: 150px; height: 80px; object-fit: cover; border-radius: 8px; background-color: var(--bg-dark); }
         .logo-preview { width: 100px; height: 50px; object-fit: contain; }
         .color-input-group { display: flex; align-items: center; gap: 10px; }
-        .color-input-group input[type="color"] { border: none; background: none; width: 50px; height: 40px; padding: 0; }
+        .color-input-group input[type="color"] { border: none; background: none; width: 50px; height: 40px; padding: 0; cursor: pointer; }
         .color-input-group input[type="text"] { flex-grow: 1; }
         
         /* --- RESPONSIVIDADE --- */
@@ -213,7 +168,8 @@
                     <li><a href="#" class="nav-link" data-target="users-content"><i class="fas fa-users"></i><span>Usuários</span></a></li>
                     <li><a href="#" class="nav-link" data-target="scratchcards-content"><i class="fas fa-ticket-alt"></i><span>Raspadinhas</span></a></li>
                     <li><a href="#" class="nav-link" data-target="transactions-content"><i class="fas fa-exchange-alt"></i><span>Transações</span></a></li>
-                    <!-- INÍCIO DA ALTERAÇÃO: Link de Configurações -->
+                    <!-- INÍCIO DA ALTERAÇÃO: Links de Envios e Configurações -->
+                    <li><a href="#" class="nav-link" data-target="shipping-content"><i class="fas fa-truck"></i><span>Envios</span></a></li>
                     <li><a href="#" class="nav-link" data-target="settings-content"><i class="fas fa-cog"></i><span>Configurações</span></a></li>
                     <!-- FIM DA ALTERAÇÃO -->
                 </ul>
@@ -262,56 +218,40 @@
                          <div class="card"><div class="table-wrapper"><table class="styled-table"><thead><tr><th>ID Transação</th><th>Usuário</th><th>Tipo</th><th>Valor</th><th>Status</th><th>Data</th></tr></thead><tbody><tr><td>#PIX-12345</td><td>Juliana S.</td><td>Depósito</td><td style="color: var(--green);">+ R$ 50,00</td><td><span class="status-badge success">Concluído</span></td><td>08/08/2025 10:30</td></tr><tr><td>#PREM-67890</td><td>Carlos F.</td><td>Prêmio</td><td style="color: var(--green);">+ R$ 100,00</td><td><span class="status-badge success">Concluído</span></td><td>08/08/2025 09:15</td></tr><tr><td>#SAQ-54321</td><td>Carlos F.</td><td>Saque</td><td style="color: var(--red);">- R$ 25,00</td><td><span class="status-badge danger">Pendente</span></td><td>07/08/2025 18:00</td></tr></tbody></table></div></div>
                     </section>
                     
-                    <!-- INÍCIO DA ALTERAÇÃO: Conteúdo de Configurações -->
+                    <!-- INÍCIO DA ALTERAÇÃO: Conteúdo de Envios -->
+                    <section id="shipping-content" class="admin-page">
+                        <div class="card">
+                            <div class="table-wrapper">
+                                <table class="styled-table" id="shipping-table">
+                                    <thead><tr><th>Pedido ID</th><th>Usuário</th><th>Prêmio</th><th>Status</th><th>Rastreamento</th><th>Ações</th></tr></thead>
+                                    <tbody>
+                                        <tr data-status="Em Separação" data-tracking=""><td>#ENV-001</td><td>Juliana S.</td><td>Apple iPhone 15 Pro</td><td><span class="status-badge warning">Em Separação</span></td><td>N/A</td><td class="action-buttons"><button class="edit-shipping-btn" title="Atualizar Envio"><i class="fas fa-edit"></i></button></td></tr>
+                                        <tr data-status="Enviado" data-tracking="BR123456789BR"><td>#ENV-002</td><td>Carlos F.</td><td>Fone Bluetooth</td><td><span class="status-badge success">Enviado</span></td><td>BR123456789BR</td><td class="action-buttons"><button class="edit-shipping-btn" title="Atualizar Envio"><i class="fas fa-edit"></i></button></td></tr>
+                                        <tr data-status="Entregue" data-tracking="BR987654321BR"><td>#ENV-003</td><td>Marcos A.</td><td>Air Fryer</td><td><span class="status-badge success">Entregue</span></td><td>BR987654321BR</td><td class="action-buttons"><button class="edit-shipping-btn" title="Atualizar Envio"><i class="fas fa-edit"></i></button></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+                    <!-- FIM DA ALTERAÇÃO -->
+                    
+                    <!-- Conteúdo de Configurações -->
                     <section id="settings-content" class="admin-page">
                         <form id="settings-form">
                             <div class="card">
                                 <h2>Identidade Visual</h2>
-                                <div class="form-group">
-                                    <label for="logo-url">URL do Logo</label>
-                                    <div class="image-preview-group">
-                                        <input type="text" id="logo-url" value="https://i.imgur.com/link-para-seu-logo.png">
-                                        <img src="https://i.imgur.com/link-para-seu-logo.png" id="logo-preview" class="image-preview logo-preview" alt="Logo Preview">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="primary-color">Cor Principal do Site</label>
-                                    <div class="color-input-group">
-                                        <input type="color" id="primary-color-picker" value="#f5b942">
-                                        <input type="text" id="primary-color-text" value="#f5b942">
-                                    </div>
-                                </div>
+                                <div class="form-group"><label for="logo-url">URL do Logo</label><div class="image-preview-group"><input type="text" id="logo-url" value="https://i.imgur.com/link-para-seu-logo.png"><img src="https://i.imgur.com/link-para-seu-logo.png" id="logo-preview" class="image-preview logo-preview" alt="Logo Preview"></div></div>
+                                <div class="form-group"><label for="primary-color">Cor Principal do Site</label><div class="color-input-group"><input type="color" id="primary-color-picker" value="#f5b942"><input type="text" id="primary-color-text" value="#f5b942"></div></div>
                             </div>
-
                             <div class="card">
                                 <h2>Banners do Carrossel</h2>
-                                <div class="form-group">
-                                    <label for="banner-1-url">URL do Banner 1</label>
-                                    <div class="image-preview-group">
-                                        <input type="text" id="banner-1-url" value="img/img1.png">
-                                        <img src="img/img1.png" id="banner-1-preview" class="image-preview" alt="Banner 1 Preview">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="banner-2-url">URL do Banner 2</label>
-                                    <div class="image-preview-group">
-                                        <input type="text" id="banner-2-url" value="img/img2.png">
-                                        <img src="img/img2.png" id="banner-2-preview" class="image-preview" alt="Banner 2 Preview">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="banner-3-url">URL do Banner 3</label>
-                                    <div class="image-preview-group">
-                                        <input type="text" id="banner-3-url" value="img/img3.png">
-                                        <img src="img/img3.png" id="banner-3-preview" class="image-preview" alt="Banner 3 Preview">
-                                    </div>
-                                </div>
+                                <div class="form-group"><label for="banner-1-url">URL do Banner 1</label><div class="image-preview-group"><input type="text" id="banner-1-url" value="img/img1.png"><img src="img/img1.png" id="banner-1-preview" class="image-preview" alt="Banner 1 Preview"></div></div>
+                                <div class="form-group"><label for="banner-2-url">URL do Banner 2</label><div class="image-preview-group"><input type="text" id="banner-2-url" value="img/img2.png"><img src="img/img2.png" id="banner-2-preview" class="image-preview" alt="Banner 2 Preview"></div></div>
+                                <div class="form-group"><label for="banner-3-url">URL do Banner 3</label><div class="image-preview-group"><input type="text" id="banner-3-url" value="img/img3.png"><img src="img/img3.png" id="banner-3-preview" class="image-preview" alt="Banner 3 Preview"></div></div>
                             </div>
-                            
                             <button type="submit" class="btn btn-primary" style="font-size: 1rem; width: 100%;">Salvar Alterações</button>
                         </form>
                     </section>
-                    <!-- FIM DA ALTERAÇÃO -->
                 </div>
             </main>
         </div>
@@ -320,10 +260,7 @@
     <!-- Modais -->
     <div id="scratchcard-modal" class="modal-overlay">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="scratchcard-modal-title">Criar Raspadinha</h2>
-                <button class="close-modal-btn">&times;</button>
-            </div>
+            <div class="modal-header"><h2 id="scratchcard-modal-title">Criar Raspadinha</h2><button class="close-modal-btn">&times;</button></div>
             <form id="scratchcard-form">
                 <div class="form-group"><label for="sc-name">Nome da Raspadinha</label><input type="text" id="sc-name" required></div>
                 <div class="form-group"><label for="sc-price">Preço (Ex: 0.50)</label><input type="number" step="0.01" id="sc-price" required></div>
@@ -337,23 +274,44 @@
 
     <div id="user-modal" class="modal-overlay">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="user-modal-title">Gerenciar Saldo</h2>
-                <button class="close-modal-btn">&times;</button>
-            </div>
+            <div class="modal-header"><h2 id="user-modal-title">Gerenciar Saldo</h2><button class="close-modal-btn">&times;</button></div>
             <p><strong>Usuário:</strong> <span id="user-modal-name"></span></p>
             <p><strong>Saldo Atual:</strong> <span id="user-modal-balance"></span></p>
             <hr style="border-color: #444; margin: 15px 0;">
-            <div class="form-group">
-                <label for="balance-amount">Valor para Adicionar/Remover</label>
-                <input type="number" id="balance-amount" step="0.01" placeholder="Ex: 50.00">
-            </div>
+            <div class="form-group"><label for="balance-amount">Valor para Adicionar/Remover</label><input type="number" id="balance-amount" step="0.01" placeholder="Ex: 50.00"></div>
             <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
                 <button id="remove-balance-btn" class="btn btn-red">Remover Saldo</button>
                 <button id="add-balance-btn" class="btn btn-green">Adicionar Saldo</button>
             </div>
         </div>
     </div>
+    
+    <!-- INÍCIO DA ALTERAÇÃO: Modal de Envio -->
+    <div id="shipping-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header"><h2 id="shipping-modal-title">Atualizar Envio</h2><button class="close-modal-btn">&times;</button></div>
+            <p><strong>Pedido ID:</strong> <span id="shipping-modal-id"></span></p>
+            <p><strong>Prêmio:</strong> <span id="shipping-modal-prize"></span></p>
+            <hr style="border-color: #444; margin: 15px 0;">
+            <form id="shipping-form">
+                <div class="form-group">
+                    <label for="shipping-status">Status do Envio</label>
+                    <select id="shipping-status">
+                        <option value="Pedido Recebido">Pedido Recebido</option>
+                        <option value="Em Separação">Em Separação</option>
+                        <option value="Enviado">Enviado</option>
+                        <option value="Entregue">Entregue</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="shipping-tracking">Código de Rastreamento</label>
+                    <input type="text" id="shipping-tracking" placeholder="Insira o código aqui">
+                </div>
+                <div class="modal-footer"><button type="submit" class="btn btn-primary">Salvar Alterações</button></div>
+            </form>
+        </div>
+    </div>
+    <!-- FIM DA ALTERAÇÃO -->
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -362,7 +320,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('login-form');
     const logoutBtn = document.getElementById('logout-btn');
 
-    // --- LÓGICA DE LOGIN/LOGOUT (SIMULADA) ---
     loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
         loginPage.style.display = 'none';
@@ -379,7 +336,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.reload();
     });
 
-    // --- LÓGICA DE NAVEGAÇÃO SPA ---
     const navLinks = document.querySelectorAll('.nav-link');
     const adminPages = document.querySelectorAll('.admin-page');
     const pageTitle = document.getElementById('page-title');
@@ -396,16 +352,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- LÓGICA DOS MODAIS ---
-    const scratchcardModal = document.getElementById('scratchcard-modal');
-    const userModal = document.getElementById('user-modal');
-    const createScratchcardBtn = document.getElementById('create-scratchcard-btn');
-    const scratchcardGrid = document.getElementById('scratchcard-grid');
-    const usersTable = document.getElementById('users-table');
-    
+    const allModals = document.querySelectorAll('.modal-overlay');
     function openModal(modal) { modal.classList.add('visible'); }
     function closeModal(modal) { modal.classList.remove('visible'); }
-
-    document.querySelectorAll('.modal-overlay').forEach(modal => {
+    allModals.forEach(modal => {
         modal.addEventListener('click', (e) => {
             if (e.target === modal || e.target.classList.contains('close-modal-btn')) {
                 closeModal(modal);
@@ -413,13 +363,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    createScratchcardBtn.addEventListener('click', () => {
+    // Modal de Raspadinha
+    const scratchcardModal = document.getElementById('scratchcard-modal');
+    document.getElementById('create-scratchcard-btn').addEventListener('click', () => {
         document.getElementById('scratchcard-modal-title').textContent = 'Criar Raspadinha';
         document.getElementById('scratchcard-form').reset();
         openModal(scratchcardModal);
     });
-
-    scratchcardGrid.addEventListener('click', (e) => {
+    document.getElementById('scratchcard-grid').addEventListener('click', (e) => {
         const editButton = e.target.closest('.edit-scratchcard-btn');
         if (editButton) {
             const card = editButton.closest('.scratch-card');
@@ -432,14 +383,11 @@ document.addEventListener('DOMContentLoaded', () => {
             openModal(scratchcardModal);
         }
     });
-    
-    document.getElementById('scratchcard-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        console.log('Dados da raspadinha salvos!');
-        closeModal(scratchcardModal);
-    });
+    document.getElementById('scratchcard-form').addEventListener('submit', (e) => { e.preventDefault(); console.log('Dados da raspadinha salvos!'); closeModal(scratchcardModal); });
 
-    usersTable.addEventListener('click', (e) => {
+    // Modal de Usuário
+    const userModal = document.getElementById('user-modal');
+    document.getElementById('users-table').addEventListener('click', (e) => {
         const editButton = e.target.closest('.edit-user-btn');
         if (editButton) {
             const row = editButton.closest('tr');
@@ -452,22 +400,35 @@ document.addEventListener('DOMContentLoaded', () => {
             openModal(userModal);
         }
     });
+    document.getElementById('add-balance-btn').addEventListener('click', () => { const amount = document.getElementById('balance-amount').value; if (amount > 0) { console.log(`Adicionar R$ ${amount} ao usuário.`); closeModal(userModal); } });
+    document.getElementById('remove-balance-btn').addEventListener('click', () => { const amount = document.getElementById('balance-amount').value; if (amount > 0) { console.log(`Remover R$ ${amount} do usuário.`); closeModal(userModal); } });
+    
+    // INÍCIO DA ALTERAÇÃO: Lógica do Modal de Envio
+    const shippingModal = document.getElementById('shipping-modal');
+    document.getElementById('shipping-table').addEventListener('click', (e) => {
+        const editButton = e.target.closest('.edit-shipping-btn');
+        if (editButton) {
+            const row = editButton.closest('tr');
+            const orderId = row.children[0].textContent;
+            const prizeName = row.children[2].textContent;
+            const currentStatus = row.dataset.status;
+            const currentTracking = row.dataset.tracking;
 
-    document.getElementById('add-balance-btn').addEventListener('click', () => {
-        const amount = document.getElementById('balance-amount').value;
-        if (amount > 0) {
-            console.log(`Adicionar R$ ${amount} ao usuário.`);
-            closeModal(userModal);
+            document.getElementById('shipping-modal-id').textContent = orderId;
+            document.getElementById('shipping-modal-prize').textContent = prizeName;
+            document.getElementById('shipping-status').value = currentStatus;
+            document.getElementById('shipping-tracking').value = currentTracking;
+            openModal(shippingModal);
         }
     });
-
-    document.getElementById('remove-balance-btn').addEventListener('click', () => {
-        const amount = document.getElementById('balance-amount').value;
-        if (amount > 0) {
-            console.log(`Remover R$ ${amount} do usuário.`);
-            closeModal(userModal);
-        }
+    document.getElementById('shipping-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const status = document.getElementById('shipping-status').value;
+        const tracking = document.getElementById('shipping-tracking').value;
+        console.log(`Envio atualizado: Status - ${status}, Rastreamento - ${tracking}`);
+        closeModal(shippingModal);
     });
+    // FIM DA ALTERAÇÃO
 
     // --- LÓGICA DA PÁGINA DE CONFIGURAÇÕES ---
     const settingsForm = document.getElementById('settings-form');
@@ -481,78 +442,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const banner3Preview = document.getElementById('banner-3-preview');
     const colorPicker = document.getElementById('primary-color-picker');
     const colorText = document.getElementById('primary-color-text');
-
-    function updatePreview(input, preview) {
-        if (input.value.trim() !== '') {
-            preview.src = input.value;
-        }
-    }
-
+    function updatePreview(input, preview) { if (input.value.trim() !== '') { preview.src = input.value; } }
     logoUrlInput.addEventListener('input', () => updatePreview(logoUrlInput, logoPreview));
     banner1UrlInput.addEventListener('input', () => updatePreview(banner1UrlInput, banner1Preview));
     banner2UrlInput.addEventListener('input', () => updatePreview(banner2UrlInput, banner2Preview));
     banner3UrlInput.addEventListener('input', () => updatePreview(banner3UrlInput, banner3Preview));
-    
     colorPicker.addEventListener('input', () => { colorText.value = colorPicker.value; });
-    colorText.addEventListener('input', () => { colorPicker.value = colorText.value; });
-
-    settingsForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        console.log("Configurações Salvas:", {
-            logo: logoUrlInput.value,
-            color: colorText.value,
-            banner1: banner1UrlInput.value,
-            banner2: banner2UrlInput.value,
-            banner3: banner3UrlInput.value
-        });
-        alert('Configurações salvas com sucesso! (Verifique o console)');
-    });
-
+    colorText.addEventListener('input', () => { try { colorPicker.value = colorText.value; } catch (e) {} });
+    settingsForm.addEventListener('submit', (e) => { e.preventDefault(); console.log("Configurações Salvas"); alert('Configurações salvas com sucesso!'); });
 
     // --- LÓGICA DOS GRÁFICOS (CHART.JS) ---
     function renderCharts() {
-        const chartOptions = {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: { beginAtZero: true, ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-                x: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } }
-            },
-            plugins: { legend: { labels: { color: 'white' } } }
-        };
-
+        const chartOptions = { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } }, x: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } } }, plugins: { legend: { labels: { color: 'white' } } } };
         const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-        new Chart(revenueCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Dia 1', 'Dia 2', 'Dia 3', 'Dia 4', 'Dia 5', 'Dia 6', 'Hoje'],
-                datasets: [{
-                    label: 'Faturamento (R$)',
-                    data: [800, 950, 1100, 980, 1300, 1200, 1250],
-                    backgroundColor: 'rgba(245, 185, 66, 0.8)',
-                    borderColor: 'rgba(245, 185, 66, 1)',
-                    borderWidth: 1,
-                    borderRadius: 5
-                }]
-            },
-            options: chartOptions
-        });
-
+        new Chart(revenueCtx, { type: 'bar', data: { labels: ['Dia 1', 'Dia 2', 'Dia 3', 'Dia 4', 'Dia 5', 'Dia 6', 'Hoje'], datasets: [{ label: 'Faturamento (R$)', data: [800, 950, 1100, 980, 1300, 1200, 1250], backgroundColor: 'rgba(245, 185, 66, 0.8)', borderColor: 'rgba(245, 185, 66, 1)', borderWidth: 1, borderRadius: 5 }] }, options: chartOptions });
         const popularityCtx = document.getElementById('popularityChart').getContext('2d');
-        new Chart(popularityCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['PIX na Conta', 'Me Mimei', 'Sonho de Consumo'],
-                datasets: [{
-                    label: 'Vendas',
-                    data: [450, 250, 156],
-                    backgroundColor: ['#3a7bd5', '#c84a8a', '#555'],
-                    borderColor: '#2a2a2a',
-                    borderWidth: 3
-                }]
-            },
-            options: { ...chartOptions, scales: {}, plugins: { legend: { position: 'bottom', labels: { color: 'white' } } } }
-        });
+        new Chart(popularityCtx, { type: 'doughnut', data: { labels: ['PIX na Conta', 'Me Mimei', 'Sonho de Consumo'], datasets: [{ label: 'Vendas', data: [450, 250, 156], backgroundColor: ['#3a7bd5', '#c84a8a', '#555'], borderColor: '#2a2a2a', borderWidth: 3 }] }, options: { ...chartOptions, scales: {}, plugins: { legend: { position: 'bottom', labels: { color: 'white' } } } } });
     }
 });
 </script>
