@@ -140,46 +140,29 @@
         .btn-primary:hover { background-color: var(--primary-gold-hover); }
         .btn-green { background-color: var(--green); color: var(--text-light); }
         .btn-red { background-color: var(--red); color: var(--text-light); }
-
-        /* --- INÍCIO DA ALTERAÇÃO: ESTILOS DO MODAL --- */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: none; /* Inicia escondido */
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-overlay.visible {
-            display: flex;
-        }
-        .modal-content {
-            background-color: var(--bg-card);
-            padding: 30px;
-            border-radius: var(--border-radius);
-            width: 90%;
-            max-width: 500px;
-            position: relative;
-        }
+        
+        /* --- MODAIS --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-overlay.visible { display: flex; }
+        .modal-content { background-color: var(--bg-card); padding: 30px; border-radius: var(--border-radius); width: 90%; max-width: 500px; position: relative; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .modal-header h2 { font-family: 'Poppins'; }
         .close-modal-btn { background: none; border: none; color: var(--text-grey); font-size: 1.8rem; cursor: pointer; }
         .form-group { margin-bottom: 15px; text-align: left; }
         .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-grey); }
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            background-color: var(--bg-dark);
-            border: 1px solid #444;
-            border-radius: 8px;
-            color: var(--text-light);
-            font-size: 1rem;
-        }
+        .form-group input { width: 100%; padding: 12px; background-color: var(--bg-dark); border: 1px solid #444; border-radius: 8px; color: var(--text-light); font-size: 1rem; }
         .modal-footer { margin-top: 20px; text-align: right; }
-        /* FIM DA ALTERAÇÃO */
-
+        
+        /* --- ESTILOS PÁGINA DE CONFIGURAÇÕES --- */
+        #settings-content .card { margin-bottom: 30px; }
+        #settings-content h2 { font-family: 'Poppins'; font-size: 1.5rem; margin-bottom: 20px; border-bottom: 1px solid #444; padding-bottom: 10px; }
+        .image-preview-group { display: flex; align-items: center; gap: 15px; }
+        .image-preview { width: 150px; height: 80px; object-fit: cover; border-radius: 8px; background-color: var(--bg-dark); }
+        .logo-preview { width: 100px; height: 50px; object-fit: contain; }
+        .color-input-group { display: flex; align-items: center; gap: 10px; }
+        .color-input-group input[type="color"] { border: none; background: none; width: 50px; height: 40px; padding: 0; }
+        .color-input-group input[type="text"] { flex-grow: 1; }
+        
         /* --- RESPONSIVIDADE --- */
         @media (max-width: 992px) {
             .charts-grid { grid-template-columns: 1fr; }
@@ -190,14 +173,7 @@
         }
         @media (max-width: 768px) {
             .admin-layout { flex-direction: column; }
-            .sidebar {
-                width: 100%;
-                height: auto;
-                flex-direction: row;
-                justify-content: space-around;
-                padding: 10px;
-                box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            }
+            .sidebar { width: 100%; height: auto; flex-direction: row; justify-content: space-around; padding: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
             .sidebar-header, .sidebar-footer { display: none; }
             .sidebar-nav { display: flex; gap: 10px; flex-grow: 0; }
             .sidebar-nav a { padding: 10px; }
@@ -219,14 +195,8 @@
             <h2 class="login-logo">PREMIADA</h2>
             <p class="login-subtitle">Painel de Administração</p>
             <form id="login-form">
-                <div class="input-group">
-                    <i class="fas fa-user"></i>
-                    <input type="text" placeholder="Usuário" value="admin" required>
-                </div>
-                <div class="input-group">
-                    <i class="fas fa-lock"></i>
-                    <input type="password" placeholder="Senha" value="admin123" required>
-                </div>
+                <div class="input-group"><i class="fas fa-user"></i><input type="text" placeholder="Usuário" value="admin" required></div>
+                <div class="input-group"><i class="fas fa-lock"></i><input type="password" placeholder="Senha" value="admin123" required></div>
                 <button type="submit" class="login-btn">Entrar</button>
             </form>
         </div>
@@ -237,29 +207,24 @@
         <div class="admin-layout">
             <!-- Barra Lateral de Navegação -->
             <aside class="sidebar">
-                <div class="sidebar-header">
-                    <h2 class="login-logo">PREMIADA</h2>
-                    <p class="login-subtitle">Admin</p>
-                </div>
+                <div class="sidebar-header"><h2 class="login-logo">PREMIADA</h2><p class="login-subtitle">Admin</p></div>
                 <ul class="sidebar-nav">
                     <li><a href="#" class="nav-link active" data-target="dashboard-content"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a></li>
                     <li><a href="#" class="nav-link" data-target="users-content"><i class="fas fa-users"></i><span>Usuários</span></a></li>
                     <li><a href="#" class="nav-link" data-target="scratchcards-content"><i class="fas fa-ticket-alt"></i><span>Raspadinhas</span></a></li>
                     <li><a href="#" class="nav-link" data-target="transactions-content"><i class="fas fa-exchange-alt"></i><span>Transações</span></a></li>
+                    <!-- INÍCIO DA ALTERAÇÃO: Link de Configurações -->
+                    <li><a href="#" class="nav-link" data-target="settings-content"><i class="fas fa-cog"></i><span>Configurações</span></a></li>
+                    <!-- FIM DA ALTERAÇÃO -->
                 </ul>
-                <div class="sidebar-footer">
-                    <a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i><span>Sair</span></a>
-                </div>
+                <div class="sidebar-footer"><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i><span>Sair</span></a></div>
             </aside>
 
             <!-- Conteúdo Principal -->
             <main class="main-content">
                 <header class="main-header">
                     <h1 id="page-title">Dashboard</h1>
-                    <div class="admin-profile">
-                        <span>Bem-vindo, <strong>Admin</strong></span>
-                        <div class="avatar">A</div>
-                    </div>
+                    <div class="admin-profile"><span>Bem-vindo, <strong>Admin</strong></span><div class="avatar">A</div></div>
                 </header>
 
                 <div id="page-content-wrapper">
@@ -279,18 +244,7 @@
 
                     <!-- Conteúdo de Usuários -->
                     <section id="users-content" class="admin-page">
-                        <div class="card">
-                            <div class="table-wrapper">
-                                <table class="styled-table" id="users-table">
-                                    <thead><tr><th>ID</th><th>Nome</th><th>Email</th><th>Saldo</th><th>Data de Cadastro</th><th>Ações</th></tr></thead>
-                                    <tbody>
-                                        <tr><td>#101</td><td>Carlos F.</td><td>carlos.f@email.com</td><td>R$ 150,00</td><td>08/08/2025</td><td class="action-buttons"><button class="edit-user-btn" title="Editar Saldo"><i class="fas fa-edit"></i></button><button title="Ver Histórico"><i class="fas fa-history"></i></button><button title="Bloquear"><i class="fas fa-ban"></i></button></td></tr>
-                                        <tr><td>#102</td><td>Juliana S.</td><td>juliana.s@email.com</td><td>R$ 25,50</td><td>07/08/2025</td><td class="action-buttons"><button class="edit-user-btn" title="Editar Saldo"><i class="fas fa-edit"></i></button><button title="Ver Histórico"><i class="fas fa-history"></i></button><button title="Bloquear"><i class="fas fa-ban"></i></button></td></tr>
-                                        <tr><td>#103</td><td>Marcos A.</td><td>marcos.a@email.com</td><td>R$ 0,00</td><td>07/08/2025</td><td class="action-buttons"><button class="edit-user-btn" title="Editar Saldo"><i class="fas fa-edit"></i></button><button title="Ver Histórico"><i class="fas fa-history"></i></button><button title="Bloquear"><i class="fas fa-ban"></i></button></td></tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                        <div class="card"><div class="table-wrapper"><table class="styled-table" id="users-table"><thead><tr><th>ID</th><th>Nome</th><th>Email</th><th>Saldo</th><th>Data de Cadastro</th><th>Ações</th></tr></thead><tbody><tr><td>#101</td><td>Carlos F.</td><td>carlos.f@email.com</td><td>R$ 150,00</td><td>08/08/2025</td><td class="action-buttons"><button class="edit-user-btn" title="Editar Saldo"><i class="fas fa-edit"></i></button><button title="Ver Histórico"><i class="fas fa-history"></i></button><button title="Bloquear"><i class="fas fa-ban"></i></button></td></tr><tr><td>#102</td><td>Juliana S.</td><td>juliana.s@email.com</td><td>R$ 25,50</td><td>07/08/2025</td><td class="action-buttons"><button class="edit-user-btn" title="Editar Saldo"><i class="fas fa-edit"></i></button><button title="Ver Histórico"><i class="fas fa-history"></i></button><button title="Bloquear"><i class="fas fa-ban"></i></button></td></tr><tr><td>#103</td><td>Marcos A.</td><td>marcos.a@email.com</td><td>R$ 0,00</td><td>07/08/2025</td><td class="action-buttons"><button class="edit-user-btn" title="Editar Saldo"><i class="fas fa-edit"></i></button><button title="Ver Histórico"><i class="fas fa-history"></i></button><button title="Bloquear"><i class="fas fa-ban"></i></button></td></tr></tbody></table></div></div>
                     </section>
 
                     <!-- Conteúdo de Raspadinhas -->
@@ -307,13 +261,63 @@
                     <section id="transactions-content" class="admin-page">
                          <div class="card"><div class="table-wrapper"><table class="styled-table"><thead><tr><th>ID Transação</th><th>Usuário</th><th>Tipo</th><th>Valor</th><th>Status</th><th>Data</th></tr></thead><tbody><tr><td>#PIX-12345</td><td>Juliana S.</td><td>Depósito</td><td style="color: var(--green);">+ R$ 50,00</td><td><span class="status-badge success">Concluído</span></td><td>08/08/2025 10:30</td></tr><tr><td>#PREM-67890</td><td>Carlos F.</td><td>Prêmio</td><td style="color: var(--green);">+ R$ 100,00</td><td><span class="status-badge success">Concluído</span></td><td>08/08/2025 09:15</td></tr><tr><td>#SAQ-54321</td><td>Carlos F.</td><td>Saque</td><td style="color: var(--red);">- R$ 25,00</td><td><span class="status-badge danger">Pendente</span></td><td>07/08/2025 18:00</td></tr></tbody></table></div></div>
                     </section>
+                    
+                    <!-- INÍCIO DA ALTERAÇÃO: Conteúdo de Configurações -->
+                    <section id="settings-content" class="admin-page">
+                        <form id="settings-form">
+                            <div class="card">
+                                <h2>Identidade Visual</h2>
+                                <div class="form-group">
+                                    <label for="logo-url">URL do Logo</label>
+                                    <div class="image-preview-group">
+                                        <input type="text" id="logo-url" value="https://i.imgur.com/link-para-seu-logo.png">
+                                        <img src="https://i.imgur.com/link-para-seu-logo.png" id="logo-preview" class="image-preview logo-preview" alt="Logo Preview">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="primary-color">Cor Principal do Site</label>
+                                    <div class="color-input-group">
+                                        <input type="color" id="primary-color-picker" value="#f5b942">
+                                        <input type="text" id="primary-color-text" value="#f5b942">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <h2>Banners do Carrossel</h2>
+                                <div class="form-group">
+                                    <label for="banner-1-url">URL do Banner 1</label>
+                                    <div class="image-preview-group">
+                                        <input type="text" id="banner-1-url" value="img/img1.png">
+                                        <img src="img/img1.png" id="banner-1-preview" class="image-preview" alt="Banner 1 Preview">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="banner-2-url">URL do Banner 2</label>
+                                    <div class="image-preview-group">
+                                        <input type="text" id="banner-2-url" value="img/img2.png">
+                                        <img src="img/img2.png" id="banner-2-preview" class="image-preview" alt="Banner 2 Preview">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="banner-3-url">URL do Banner 3</label>
+                                    <div class="image-preview-group">
+                                        <input type="text" id="banner-3-url" value="img/img3.png">
+                                        <img src="img/img3.png" id="banner-3-preview" class="image-preview" alt="Banner 3 Preview">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary" style="font-size: 1rem; width: 100%;">Salvar Alterações</button>
+                        </form>
+                    </section>
+                    <!-- FIM DA ALTERAÇÃO -->
                 </div>
             </main>
         </div>
     </div>
     
-    <!-- INÍCIO DA ALTERAÇÃO: MODAIS -->
-    <!-- Modal de Raspadinha -->
+    <!-- Modais -->
     <div id="scratchcard-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -323,15 +327,14 @@
             <form id="scratchcard-form">
                 <div class="form-group"><label for="sc-name">Nome da Raspadinha</label><input type="text" id="sc-name" required></div>
                 <div class="form-group"><label for="sc-price">Preço (Ex: 0.50)</label><input type="number" step="0.01" id="sc-price" required></div>
-                <div class="form-group"><label for="sc-prize">Informação do Prêmio (Ex: PRÊMIOS ATÉ R$ 2000,00)</label><input type="text" id="sc-prize" required></div>
+                <div class="form-group"><label for="sc-prize">Informação do Prêmio</label><input type="text" id="sc-prize" required></div>
                 <div class="form-group"><label for="sc-image">URL da Imagem de Fundo</label><input type="text" id="sc-image"></div>
-                <div class="form-group"><label for="sc-color">Cor de Fundo (Ex: #4a90e2)</label><input type="text" id="sc-color"></div>
+                <div class="form-group"><label for="sc-color">Cor de Fundo (Hex)</label><input type="text" id="sc-color"></div>
                 <div class="modal-footer"><button type="submit" class="btn btn-primary">Salvar</button></div>
             </form>
         </div>
     </div>
 
-    <!-- Modal de Usuário -->
     <div id="user-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -351,7 +354,6 @@
             </div>
         </div>
     </div>
-    <!-- FIM DA ALTERAÇÃO -->
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -374,7 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     logoutBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        window.location.reload(); // Simplesmente recarrega a página para voltar ao login
+        window.location.reload();
     });
 
     // --- LÓGICA DE NAVEGAÇÃO SPA ---
@@ -393,22 +395,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- INÍCIO DA ALTERAÇÃO: LÓGICA DOS MODAIS ---
+    // --- LÓGICA DOS MODAIS ---
     const scratchcardModal = document.getElementById('scratchcard-modal');
     const userModal = document.getElementById('user-modal');
     const createScratchcardBtn = document.getElementById('create-scratchcard-btn');
     const scratchcardGrid = document.getElementById('scratchcard-grid');
     const usersTable = document.getElementById('users-table');
     
-    function openModal(modal) {
-        modal.classList.add('visible');
-    }
+    function openModal(modal) { modal.classList.add('visible'); }
+    function closeModal(modal) { modal.classList.remove('visible'); }
 
-    function closeModal(modal) {
-        modal.classList.remove('visible');
-    }
-
-    // Fechar modais
     document.querySelectorAll('.modal-overlay').forEach(modal => {
         modal.addEventListener('click', (e) => {
             if (e.target === modal || e.target.classList.contains('close-modal-btn')) {
@@ -417,7 +413,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Modal de Raspadinha
     createScratchcardBtn.addEventListener('click', () => {
         document.getElementById('scratchcard-modal-title').textContent = 'Criar Raspadinha';
         document.getElementById('scratchcard-form').reset();
@@ -425,8 +420,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     scratchcardGrid.addEventListener('click', (e) => {
-        if (e.target.classList.contains('edit-scratchcard-btn')) {
-            const card = e.target.closest('.scratch-card');
+        const editButton = e.target.closest('.edit-scratchcard-btn');
+        if (editButton) {
+            const card = editButton.closest('.scratch-card');
             document.getElementById('scratchcard-modal-title').textContent = 'Editar Raspadinha';
             document.getElementById('sc-name').value = card.dataset.name;
             document.getElementById('sc-price').value = card.dataset.price;
@@ -439,18 +435,16 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('scratchcard-form').addEventListener('submit', (e) => {
         e.preventDefault();
-        // Aqui iria a lógica para salvar os dados
         console.log('Dados da raspadinha salvos!');
         closeModal(scratchcardModal);
     });
 
-    // Modal de Usuário
     usersTable.addEventListener('click', (e) => {
-        if (e.target.classList.contains('edit-user-btn') || e.target.closest('.edit-user-btn')) {
-            const row = e.target.closest('tr');
+        const editButton = e.target.closest('.edit-user-btn');
+        if (editButton) {
+            const row = editButton.closest('tr');
             const userName = row.children[1].textContent;
             const userBalance = row.children[3].textContent;
-
             document.getElementById('user-modal-title').textContent = `Gerenciar Saldo de ${userName}`;
             document.getElementById('user-modal-name').textContent = userName;
             document.getElementById('user-modal-balance').textContent = userBalance;
@@ -475,7 +469,45 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- FIM DA ALTERAÇÃO ---
+    // --- LÓGICA DA PÁGINA DE CONFIGURAÇÕES ---
+    const settingsForm = document.getElementById('settings-form');
+    const logoUrlInput = document.getElementById('logo-url');
+    const logoPreview = document.getElementById('logo-preview');
+    const banner1UrlInput = document.getElementById('banner-1-url');
+    const banner1Preview = document.getElementById('banner-1-preview');
+    const banner2UrlInput = document.getElementById('banner-2-url');
+    const banner2Preview = document.getElementById('banner-2-preview');
+    const banner3UrlInput = document.getElementById('banner-3-url');
+    const banner3Preview = document.getElementById('banner-3-preview');
+    const colorPicker = document.getElementById('primary-color-picker');
+    const colorText = document.getElementById('primary-color-text');
+
+    function updatePreview(input, preview) {
+        if (input.value.trim() !== '') {
+            preview.src = input.value;
+        }
+    }
+
+    logoUrlInput.addEventListener('input', () => updatePreview(logoUrlInput, logoPreview));
+    banner1UrlInput.addEventListener('input', () => updatePreview(banner1UrlInput, banner1Preview));
+    banner2UrlInput.addEventListener('input', () => updatePreview(banner2UrlInput, banner2Preview));
+    banner3UrlInput.addEventListener('input', () => updatePreview(banner3UrlInput, banner3Preview));
+    
+    colorPicker.addEventListener('input', () => { colorText.value = colorPicker.value; });
+    colorText.addEventListener('input', () => { colorPicker.value = colorText.value; });
+
+    settingsForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        console.log("Configurações Salvas:", {
+            logo: logoUrlInput.value,
+            color: colorText.value,
+            banner1: banner1UrlInput.value,
+            banner2: banner2UrlInput.value,
+            banner3: banner3UrlInput.value
+        });
+        alert('Configurações salvas com sucesso! (Verifique o console)');
+    });
+
 
     // --- LÓGICA DOS GRÁFICOS (CHART.JS) ---
     function renderCharts() {
