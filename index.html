@@ -98,28 +98,46 @@
             margin-bottom: 30px;
             overflow: hidden;
             position: relative;
-            transition: height 0.3s ease-in-out; /* Animação suave da altura */
+            /* Deixar o CSS controlar a altura por aspecto, para evitar jumps no mobile */
+            aspect-ratio: 16 / 9;
+            background: #0f0f0f;
+        }
+        /* Em telas menores, um banner mais alto favorece o "contain" sem barras minúsculas */
+        @media (max-width: 768px) {
+            .carousel-container { aspect-ratio: 4 / 3; }
         }
         .carousel-track {
             display: flex;
             transition: transform 0.5s ease-in-out;
+            height: 100%; /* Importante para que os slides e imagens ocupem toda a altura do container */
         }
         .carousel-slide {
             min-width: 100%;
             flex-shrink: 0;
+            height: 100%;
+            position: relative;
+            background: #0f0f0f;
         }
         .carousel-slide img {
+            position: absolute;
+            inset: 0;
+            margin: auto;
             width: 100%;
-            height: auto;
+            height: 100%;
             display: block;
+            object-fit: contain; /* MOSTRAR TODA A IMAGEM */
+            pointer-events: none;
+            -webkit-user-drag: none;
+            user-select: none;
         }
         .carousel-dots {
             position: absolute;
-            bottom: 15px;
+            bottom: 12px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
             gap: 10px;
+            z-index: 2;
         }
         .carousel-dot {
             width: 12px;
@@ -129,9 +147,10 @@
             border-radius: 50%;
             background-color: rgba(255, 255, 255, 0.5);
             cursor: pointer;
-            transition: background-color var(--transition-speed);
+            transition: background-color var(--transition-speed), transform var(--transition-speed);
         }
-        .carousel-dot.active { background-color: var(--primary-gold); }
+        .carousel-dot.active { background-color: var(--primary-gold); transform: scale(1.05); }
+
         .live-winners-section { display: flex; margin-bottom: 40px; }
         .live-tag { background-color: var(--green-live); padding: 20px; border-radius: 10px; font-weight: 700; text-align: center; align-self: stretch; flex-shrink: 0; display: flex; align-items: center; gap: 10px; }
         .blinking-dot { width: 12px; height: 12px; background-color: #fff; border-radius: 50%; animation: blink-animation 1.5s infinite ease-in-out; }
@@ -240,40 +259,17 @@
 
         /* --- RESPONSIVIDADE --- */
         @media (max-width: 768px) {
-            .header-logged-in {
-                flex-wrap: wrap;
-                row-gap: 15px;
-            }
+            .header-logged-in { flex-wrap: wrap; row-gap: 15px; }
             .header-logged-in .logo { order: 1; }
             .header-logged-in .header-right { order: 2; }
-            .header-logged-in .header-center {
-                order: 3;
-                width: 100%;
-                justify-content: center;
-            }
-            .user-profile .user-name-text {
-                display: none;
-            }
+            .header-logged-in .header-center { order: 3; width: 100%; justify-content: center; }
+            .user-profile .user-name-text { display: none; }
 
-            .footer-grid {
-                grid-template-columns: 1fr;
-                text-align: center;
-            }
-            .footer-column {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }
-            .social-links {
-                justify-content: center;
-            }
-            .live-winners-section {
-                flex-direction: column;
-                gap: 15px;
-            }
-            .winners-scroll-container {
-                padding-left: 0;
-            }
+            .footer-grid { grid-template-columns: 1fr; text-align: center; }
+            .footer-column { display: flex; flex-direction: column; align-items: center; }
+            .social-links { justify-content: center; }
+            .live-winners-section { flex-direction: column; gap: 15px; }
+            .winners-scroll-container { padding-left: 0; }
         }
     </style>
 </head>
@@ -358,10 +354,10 @@
         <main class="container">
             <div id="dashboard-page" class="page-container">
                 <section class="carousel-container">
-                    <div class="carousel-track">
-                        <div class="carousel-slide"><img src="img/img1.png" alt="Promo Banner 1"></div>
-                        <div class="carousel-slide"><img src="img/img2.png" alt="Promo Banner 2"></div>
-                        <div class="carousel-slide"><img src="img/img3.png" alt="Promo Banner 3"></div>
+                    <div class="carousel-track" id="carousel-track">
+                        <div class="carousel-slide"><img src="img/img1.png" alt="Promo Banner 1" loading="eager"></div>
+                        <div class="carousel-slide"><img src="img/img2.png" alt="Promo Banner 2" loading="lazy"></div>
+                        <div class="carousel-slide"><img src="img/img3.png" alt="Promo Banner 3" loading="lazy"></div>
                     </div>
                     <div class="carousel-dots"></div>
                 </section>
@@ -596,22 +592,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const carouselTrack = document.querySelector('.carousel-track');
     const slides = document.querySelectorAll('.carousel-slide');
     const dotsContainer = document.querySelector('.carousel-dots');
+
+    // Função utilitária: se a imagem não carregar, troca por um placeholder neutro
+    function attachImageFallback(img) {
+        if (!img) return;
+        img.addEventListener('error', () => {
+            img.src = 'https://via.placeholder.com/1600x900.png?text=Banner';
+        }, { once: true });
+    }
+
     if (slides.length > 0) {
         let currentSlide = 0;
         let slideInterval;
-        const firstImage = slides[0].querySelector('img');
 
-        // Função para ajustar a altura do carrossel
-        function setCarouselHeight() {
-            if (!carouselContainer) return;
-            const currentImage = slides[currentSlide].querySelector('img');
-            if (currentImage) {
-                // Define a altura do container com base na altura renderizada da imagem atual
-                carouselContainer.style.height = `${currentImage.clientHeight}px`;
-            }
-        }
-
-        slides.forEach((_, i) => {
+        // cria dots
+        slides.forEach((slide, i) => {
+            const img = slide.querySelector('img');
+            attachImageFallback(img);
             const dot = document.createElement('button');
             dot.classList.add('carousel-dot');
             if (i === 0) dot.classList.add('active');
@@ -631,8 +628,8 @@ document.addEventListener('DOMContentLoaded', () => {
             dots.forEach(dot => dot.classList.remove('active'));
             if(dots[slideIndex]) dots[slideIndex].classList.add('active');
             currentSlide = slideIndex;
-            // Ajusta a altura sempre que o slide muda
-            setCarouselHeight();
+            // Altura controlada por CSS (aspect-ratio). Garantimos que o JS não force altura.
+            if (carouselContainer) carouselContainer.style.height = '';
         };
         
         const nextSlide = () => {
@@ -653,19 +650,36 @@ document.addEventListener('DOMContentLoaded', () => {
             carouselContainer.addEventListener('mouseenter', stopCarousel);
             carouselContainer.addEventListener('mouseleave', startCarousel);
         }
-        
-        // Ajusta a altura inicial após a primeira imagem carregar
-        if (firstImage) {
-            if (firstImage.complete) {
-                setCarouselHeight();
-            } else {
-                firstImage.onload = setCarouselHeight;
-            }
-        }
 
-        // Ajusta a altura ao redimensionar a janela
-        window.addEventListener('resize', setCarouselHeight);
-        
+        // Suporte a swipe no mobile
+        let touchStartX = 0;
+        let touchDeltaX = 0;
+        const SWIPE_THRESHOLD = 50;
+
+        carouselContainer.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchDeltaX = 0;
+            stopCarousel();
+        }, { passive: true });
+
+        carouselContainer.addEventListener('touchmove', (e) => {
+            touchDeltaX = e.touches[0].clientX - touchStartX;
+        }, { passive: true });
+
+        carouselContainer.addEventListener('touchend', () => {
+            if (Math.abs(touchDeltaX) > SWIPE_THRESHOLD) {
+                if (touchDeltaX < 0) {
+                    nextSlide();
+                } else {
+                    const prevIndex = (currentSlide - 1 + slides.length) % slides.length;
+                    goToSlide(prevIndex);
+                }
+            }
+            startCarousel();
+        });
+
+        // Inicia
+        goToSlide(0);
         startCarousel();
     }
     // --- FIM DA ALTERAÇÃO ---
@@ -735,8 +749,8 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.addEventListener('mousemove', scratch);
         canvas.addEventListener('mouseup', () => isDrawing = false);
         canvas.addEventListener('mouseleave', () => isDrawing = false);
-        canvas.addEventListener('touchstart', (e) => { isDrawing = true; scratch(e); });
-        canvas.addEventListener('touchmove', scratch);
+        canvas.addEventListener('touchstart', (e) => { isDrawing = true; scratch(e); }, { passive: false });
+        canvas.addEventListener('touchmove', scratch, { passive: false });
         canvas.addEventListener('touchend', () => isDrawing = false);
     }
     
