@@ -98,25 +98,21 @@
             margin-bottom: 30px;
             overflow: hidden;
             position: relative;
+            transition: height 0.3s ease-in-out; /* Animação suave da altura */
         }
-        /* INÍCIO DA ALTERAÇÃO: CSS do Carrossel */
         .carousel-track {
             display: flex;
-            /* height: 100%; <- REMOVIDO */
             transition: transform 0.5s ease-in-out;
         }
         .carousel-slide {
             min-width: 100%;
             flex-shrink: 0;
-            /* height: 100%; <- REMOVIDO */
         }
         .carousel-slide img {
             width: 100%;
-            height: auto; /* Garante que a imagem mantenha a proporção */
-            display: block; /* Remove espaço extra abaixo da imagem */
-            vertical-align: middle; /* Alinhamento vertical para evitar problemas de layout */
+            height: auto;
+            display: block;
         }
-        /* FIM DA ALTERAÇÃO */
         .carousel-dots {
             position: absolute;
             bottom: 15px;
@@ -595,7 +591,7 @@ document.addEventListener('DOMContentLoaded', () => {
     userProfileIcon.addEventListener('click', (e) => { e.stopPropagation(); userDropdownMenu.classList.toggle('active'); });
     window.addEventListener('click', () => { if (userDropdownMenu.classList.contains('active')) userDropdownMenu.classList.remove('active'); });
 
-    // --- LÓGICA DO CARROSSEL ---
+    // --- INÍCIO DA ALTERAÇÃO: LÓGICA DO CARROSSEL ---
     const carouselContainer = document.querySelector('.carousel-container');
     const carouselTrack = document.querySelector('.carousel-track');
     const slides = document.querySelectorAll('.carousel-slide');
@@ -603,6 +599,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (slides.length > 0) {
         let currentSlide = 0;
         let slideInterval;
+        const firstImage = slides[0].querySelector('img');
+
+        // Função para ajustar a altura do carrossel
+        function setCarouselHeight() {
+            if (!carouselContainer) return;
+            const currentImage = slides[currentSlide].querySelector('img');
+            if (currentImage) {
+                // Define a altura do container com base na altura renderizada da imagem atual
+                carouselContainer.style.height = `${currentImage.clientHeight}px`;
+            }
+        }
 
         slides.forEach((_, i) => {
             const dot = document.createElement('button');
@@ -624,6 +631,8 @@ document.addEventListener('DOMContentLoaded', () => {
             dots.forEach(dot => dot.classList.remove('active'));
             if(dots[slideIndex]) dots[slideIndex].classList.add('active');
             currentSlide = slideIndex;
+            // Ajusta a altura sempre que o slide muda
+            setCarouselHeight();
         };
         
         const nextSlide = () => {
@@ -645,8 +654,21 @@ document.addEventListener('DOMContentLoaded', () => {
             carouselContainer.addEventListener('mouseleave', startCarousel);
         }
         
+        // Ajusta a altura inicial após a primeira imagem carregar
+        if (firstImage) {
+            if (firstImage.complete) {
+                setCarouselHeight();
+            } else {
+                firstImage.onload = setCarouselHeight;
+            }
+        }
+
+        // Ajusta a altura ao redimensionar a janela
+        window.addEventListener('resize', setCarouselHeight);
+        
         startCarousel();
     }
+    // --- FIM DA ALTERAÇÃO ---
 
     // --- LÓGICA DA PÁGINA DE JOGO ---
     const scratchGridContainer = document.getElementById('scratch-grid-container');
