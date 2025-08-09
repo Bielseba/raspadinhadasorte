@@ -91,87 +91,65 @@
         .dropdown-menu a.logout { color: var(--red-logout); }
         .dropdown-menu a i { width: 20px; text-align: center; }
         
- /* --- CARROSSEL E SEÇÃO AO VIVO --- */
-.carousel-container {
-    width: 100%;
-    height: 100vh; /* Banner ocupa toda a tela no desktop */
-    border-radius: 0; /* Tela cheia não precisa de borda arredondada */
-    margin-bottom: 0;
-    overflow: hidden;
-    position: relative;
-    background: #000;
-}
-
-/* No mobile, mantém um formato mais alto porém não tela cheia */
-@media (max-width: 768px) {
-    .carousel-container {
-        height: auto;
-        aspect-ratio: 4 / 3;
-        border-radius: 15px;
-        margin-bottom: 30px;
-    }
-}
-
-.carousel-track {
-    display: flex;
-    transition: transform 0.5s ease-in-out;
-    height: 100%;
-}
-
-.carousel-slide {
-    min-width: 100%;
-    flex-shrink: 0;
-    height: 100%;
-    position: relative;
-}
-
-.carousel-slide img {
-    position: absolute;
-    inset: 0;
-    margin: auto;
-    width: 100%;
-    height: 100%;
-    display: block;
-    object-fit: cover; /* Preenche tela no desktop */
-    pointer-events: none;
-    -webkit-user-drag: none;
-    user-select: none;
-}
-
-/* No mobile, mostra a imagem inteira sem cortar */
-@media (max-width: 768px) {
-    .carousel-slide img {
-        object-fit: contain;
-        background-color: #000;
-    }
-}
-
-.carousel-dots {
-    position: absolute;
-    bottom: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 10px;
-    z-index: 2;
-}
-
-.carousel-dot {
-    width: 12px;
-    height: 12px;
-    border: none;
-    padding: 0;
-    border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.5);
-    cursor: pointer;
-    transition: background-color var(--transition-speed), transform var(--transition-speed);
-}
-
-.carousel-dot.active {
-    background-color: var(--primary-gold);
-    transform: scale(1.05);
-}
-
+        /* --- CARROSSEL E SEÇÃO AO VIVO --- */
+        .carousel-container {
+            width: 100%;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            position: relative;
+            /* Deixar o CSS controlar a altura por aspecto, para evitar jumps no mobile */
+            aspect-ratio: 16 / 9;
+            background: #0f0f0f;
+        }
+        /* Em telas menores, um banner mais alto favorece o "contain" sem barras minúsculas */
+        @media (max-width: 768px) {
+            .carousel-container { aspect-ratio: 4 / 3; }
+        }
+        .carousel-track {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+            height: 100%; /* Importante para que os slides e imagens ocupem toda a altura do container */
+        }
+        .carousel-slide {
+            min-width: 100%;
+            flex-shrink: 0;
+            height: 100%;
+            position: relative;
+            background: #0f0f0f;
+        }
+        .carousel-slide img {
+            position: absolute;
+            inset: 0;
+            margin: auto;
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: contain; /* MOSTRAR TODA A IMAGEM */
+            pointer-events: none;
+            -webkit-user-drag: none;
+            user-select: none;
+        }
+        .carousel-dots {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 2;
+        }
+        .carousel-dot {
+            width: 12px;
+            height: 12px;
+            border: none;
+            padding: 0;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: background-color var(--transition-speed), transform var(--transition-speed);
+        }
+        .carousel-dot.active { background-color: var(--primary-gold); transform: scale(1.05); }
 
         .live-winners-section { display: flex; margin-bottom: 40px; }
         .live-tag { background-color: var(--green-live); padding: 20px; border-radius: 10px; font-weight: 700; text-align: center; align-self: stretch; flex-shrink: 0; display: flex; align-items: center; gap: 10px; }
