@@ -1,5 +1,6 @@
-import { BaseEntity } from './Base';
-import { IPrize } from './Raspadinha';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { User } from './User';
+import { Raspadinha } from './Raspadinha';
 
 export enum PurchaseStatus {
   PENDING = 'pending',
@@ -7,45 +8,77 @@ export enum PurchaseStatus {
   CANCELLED = 'cancelled'
 }
 
-export class Purchase extends BaseEntity {
-  public userId: string;
-  public raspadinhaId: string;
-  public amount: number;
-  public status: PurchaseStatus;
-  public prize?: IPrize;
-  public isScratched: boolean;
-  public scratchedAt?: Date;
+@Entity('purchases')
+export class Purchase {
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
 
-  constructor(data: {
+  @Column({ type: 'uuid' })
+  userId!: string;
+
+  @Column({ type: 'uuid' })
+  raspadinhaId!: string;
+
+  @Column({ 
+    type: 'enum', 
+    enum: PurchaseStatus, 
+    default: PurchaseStatus.PENDING 
+  })
+  status!: PurchaseStatus;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  amount!: number;
+
+  @Column({ type: 'int', default: 0 })
+  winnings!: number;
+
+  @Column({ type: 'boolean', default: false })
+  isScratched!: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
+  scratchedAt?: Date;
+
+  @CreateDateColumn()
+  createdAt!: Date;
+
+  @UpdateDateColumn()
+  updatedAt!: Date;
+
+  @ManyToOne(() => User, user => user.purchases)
+  @JoinColumn({ name: 'userId' })
+  user!: User;
+
+  @ManyToOne(() => Raspadinha, raspadinha => raspadinha.purchases)
+  @JoinColumn({ name: 'raspadinhaId' })
+  raspadinha!: Raspadinha;
+
+  constructor(data?: {
     userId: string;
     raspadinhaId: string;
     amount: number;
   }) {
-    super();
-    this.userId = data.userId;
-    this.raspadinhaId = data.raspadinhaId;
-    this.amount = data.amount;
-    this.status = PurchaseStatus.PENDING;
-    this.isScratched = false;
+    if (data) {
+      this.userId = data.userId;
+      this.raspadinhaId = data.raspadinhaId;
+      this.amount = data.amount;
+      this.status = PurchaseStatus.PENDING;
+      this.winnings = 0;
+      this.isScratched = false;
+    }
   }
 
-  public complete(prize?: IPrize): void {
+  public complete(): void {
     this.status = PurchaseStatus.COMPLETED;
-    this.prize = prize;
-    this.updateTimestamp();
   }
 
   public cancel(): void {
     this.status = PurchaseStatus.CANCELLED;
-    this.updateTimestamp();
   }
 
-  public scratch(prize?: IPrize): void {
-    if (this.status === PurchaseStatus.COMPLETED && !this.isScratched) {
-      this.isScratched = true;
-      this.scratchedAt = new Date();
-      this.prize = prize;
-      this.updateTimestamp();
-    }
+  public scratch(winnings: number): void {
+    this.isScratched = true;
+    this.winnings = winnings;
+    this.scratchedAt = new Date();
+    this.status = PurchaseStatus.COMPLETED;
   }
 } 

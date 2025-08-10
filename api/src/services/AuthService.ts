@@ -1,5 +1,5 @@
 import { User } from '../entities/User';
-import { IUserService } from './UserService';
+import { UserService } from './UserService';
 import * as jwt from 'jsonwebtoken';
 
 export interface IAuthService {
@@ -10,7 +10,7 @@ export interface IAuthService {
 }
 
 export class AuthService implements IAuthService {
-  constructor(private userService: IUserService) {}
+  constructor(private userService: UserService) {}
 
   async login(email: string, password: string): Promise<{ user: User; token: string }> {
     if (!email || !password) {

@@ -1,5 +1,5 @@
 import * as Joi from 'joi';
-import { PrizeType, RaspadinhaStatus } from '../entities/Raspadinha';
+import { /* PrizeType, */ RaspadinhaStatus } from '../entities/Raspadinha';
 import { UserRole } from '../entities/User';
 
 // Validações para Raspadinha
@@ -12,7 +12,7 @@ export const createRaspadinhaSchema = Joi.object({
   prizes: Joi.array().items(
     Joi.object({
       id: Joi.string().required(),
-      type: Joi.string().valid(...Object.values(PrizeType)).required(),
+      // type: Joi.string().valid(...Object.values(PrizeType)).required(),
       name: Joi.string().required().min(3).max(100),
       value: Joi.number().positive().required(),
       image: Joi.string(),
@@ -32,7 +32,7 @@ export const updateRaspadinhaSchema = Joi.object({
   prizes: Joi.array().items(
     Joi.object({
       id: Joi.string().required(),
-      type: Joi.string().valid(...Object.values(PrizeType)).required(),
+      // type: Joi.string().valid(...Object.values(PrizeType)).required(),
       name: Joi.string().required().min(3).max(100),
       value: Joi.number().positive().required(),
       image: Joi.string(),

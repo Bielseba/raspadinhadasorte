@@ -1,5 +1,5 @@
 import { Raspadinha, RaspadinhaStatus, IPrize } from '../entities/Raspadinha';
-import { IRaspadinhaRepository } from '../repositories/RaspadinhaRepository';
+import { RaspadinhaRepository } from '../repositories/RaspadinhaRepository';
 
 export interface IRaspadinhaService {
   getAll(): Promise<Raspadinha[]>;
@@ -13,7 +13,7 @@ export interface IRaspadinhaService {
 }
 
 export class RaspadinhaService implements IRaspadinhaService {
-  constructor(private raspadinhaRepository: IRaspadinhaRepository) {}
+  constructor(private raspadinhaRepository: RaspadinhaRepository) {}
 
   async getAll(): Promise<Raspadinha[]> {
     return this.raspadinhaRepository.findAll();

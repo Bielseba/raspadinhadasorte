@@ -1,6 +1,6 @@
 import { Purchase, PurchaseStatus } from '../entities/Purchase';
-import { IPurchaseRepository } from '../repositories/PurchaseRepository';
-import { IRaspadinhaService } from './RaspadinhaService';
+import { PurchaseRepository } from '../repositories/PurchaseRepository';
+import { RaspadinhaService } from './RaspadinhaService';
 import { IUserService } from './UserService';
 
 export interface IPurchaseService {
@@ -16,8 +16,8 @@ export interface IPurchaseService {
 
 export class PurchaseService implements IPurchaseService {
   constructor(
-    private purchaseRepository: IPurchaseRepository,
-    private raspadinhaService: IRaspadinhaService,
+    private purchaseRepository: PurchaseRepository,
+    private raspadinhaService: RaspadinhaService,
     private userService: IUserService
   ) {}
 

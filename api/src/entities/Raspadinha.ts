@@ -1,76 +1,92 @@
-import { BaseEntity } from './Base';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { Purchase } from './Purchase';
 
 export enum RaspadinhaStatus {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  EXPIRED = 'expired'
+  AVAILABLE = 'available',
+  SOLD = 'sold',
+  SCRATCHED = 'scratched'
 }
 
-export enum PrizeType {
-  MONEY = 'money',
-  PRODUCT = 'product',
-  DISCOUNT = 'discount'
+export enum RaspadinhaType {
+  SILVER = 'silver',
+  GOLD = 'gold',
+  PLATINUM = 'platinum'
 }
 
-export interface IPrize {
-  id: string;
-  type: PrizeType;
-  name: string;
-  value: number;
-  image?: string;
-  probability: number; // Probabilidade de 0 a 100
-}
+@Entity('raspadinhas')
+export class Raspadinha {
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
 
-export class Raspadinha extends BaseEntity {
-  public title: string;
-  public description: string;
-  public image: string;
-  public price: number;
-  public totalCards: number;
-  public availableCards: number;
-  public prizes: IPrize[];
-  public status: RaspadinhaStatus;
-  public expiresAt?: Date;
+  @Column({ type: 'varchar', length: 255 })
+  name!: string;
 
-  constructor(data: {
-    title: string;
-    description: string;
-    image: string;
+  @Column({ type: 'text', nullable: true })
+  description?: string;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  price!: number;
+
+  @Column({ 
+    type: 'enum', 
+    enum: RaspadinhaType, 
+    default: RaspadinhaType.SILVER 
+  })
+  type!: RaspadinhaType;
+
+  @Column({ 
+    type: 'enum', 
+    enum: RaspadinhaStatus, 
+    default: RaspadinhaStatus.AVAILABLE 
+  })
+  status!: RaspadinhaStatus;
+
+  @Column({ type: 'int', default: 0 })
+  maxWinnings!: number;
+
+  @Column({ type: 'int', default: 0 })
+  currentWinnings!: number;
+
+  @Column({ type: 'boolean', default: true })
+  isActive!: boolean;
+
+  @CreateDateColumn()
+  createdAt!: Date;
+
+  @UpdateDateColumn()
+  updatedAt!: Date;
+
+  @OneToMany(() => Purchase, purchase => purchase.raspadinha)
+  purchases!: Purchase[];
+
+  constructor(data?: {
+    name: string;
+    description?: string;
     price: number;
-    totalCards: number;
-    prizes: IPrize[];
-    expiresAt?: Date;
+    type?: RaspadinhaType;
+    maxWinnings?: number;
   }) {
-    super();
-    this.title = data.title;
-    this.description = data.description;
-    this.image = data.image;
-    this.price = data.price;
-    this.totalCards = data.totalCards;
-    this.availableCards = data.totalCards;
-    this.prizes = data.prizes;
-    this.status = RaspadinhaStatus.ACTIVE;
-    this.expiresAt = data.expiresAt;
-  }
-
-  public isExpired(): boolean {
-    return this.expiresAt ? new Date() > this.expiresAt : false;
-  }
-
-  public isSoldOut(): boolean {
-    return this.availableCards <= 0;
-  }
-
-  public canBePurchased(): boolean {
-    return this.status === RaspadinhaStatus.ACTIVE && 
-           !this.isExpired() && 
-           !this.isSoldOut();
-  }
-
-  public decreaseAvailableCards(): void {
-    if (this.availableCards > 0) {
-      this.availableCards--;
-      this.updateTimestamp();
+    if (data) {
+      this.name = data.name;
+      this.description = data.description;
+      this.price = data.price;
+      this.type = data.type || RaspadinhaType.SILVER;
+      this.maxWinnings = data.maxWinnings || 0;
+      this.currentWinnings = 0;
+      this.status = RaspadinhaStatus.AVAILABLE;
+      this.isActive = true;
     }
+  }
+
+  public markAsSold(): void {
+    this.status = RaspadinhaStatus.SOLD;
+  }
+
+  public markAsScratched(): void {
+    this.status = RaspadinhaStatus.SCRATCHED;
+  }
+
+  public setWinnings(amount: number): void {
+    this.currentWinnings = amount;
   }
 } 

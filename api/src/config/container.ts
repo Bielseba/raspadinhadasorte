@@ -1,115 +1,55 @@
 // Container de Injeção de Dependência
 // Seguindo o princípio de Inversão de Dependência (D do SOLID)
 
-import { RaspadinhaRepository, IRaspadinhaRepository } from '../repositories/RaspadinhaRepository';
-import { UserRepository, IUserRepository } from '../repositories/UserRepository';
-import { PurchaseRepository, IPurchaseRepository } from '../repositories/PurchaseRepository';
-
-import { RaspadinhaService, IRaspadinhaService } from '../services/RaspadinhaService';
-import { UserService, IUserService } from '../services/UserService';
-import { PurchaseService, IPurchaseService } from '../services/PurchaseService';
-import { AuthService, IAuthService } from '../services/AuthService';
-
-import { RaspadinhaController } from '../controllers/RaspadinhaController';
+import { UserRepository } from '../repositories/UserRepository';
+import { RaspadinhaRepository } from '../repositories/RaspadinhaRepository';
+import { PurchaseRepository } from '../repositories/PurchaseRepository';
+import { UserService } from '../services/UserService';
+import { RaspadinhaService } from '../services/RaspadinhaService';
+import { PurchaseService } from '../services/PurchaseService';
+import { AuthService } from '../services/AuthService';
 import { UserController } from '../controllers/UserController';
+import { RaspadinhaController } from '../controllers/RaspadinhaController';
 import { PurchaseController } from '../controllers/PurchaseController';
 import { AuthController } from '../controllers/AuthController';
-
 import { AuthMiddleware } from '../middlewares/authMiddleware';
+import { initializeDatabase } from './database';
 
 export class Container {
-  // Repositórios
-  public readonly raspadinhaRepository: IRaspadinhaRepository;
-  public readonly userRepository: IUserRepository;
-  public readonly purchaseRepository: IPurchaseRepository;
-
-  // Serviços
-  public readonly raspadinhaService: IRaspadinhaService;
-  public readonly userService: IUserService;
-  public readonly purchaseService: IPurchaseService;
-  public readonly authService: IAuthService;
-
-  // Controladores
-  public readonly raspadinhaController: RaspadinhaController;
-  public readonly userController: UserController;
-  public readonly purchaseController: PurchaseController;
-  public readonly authController: AuthController;
-
-  // Middlewares
-  public readonly authMiddleware: AuthMiddleware;
+  public userRepository: UserRepository;
+  public raspadinhaRepository: RaspadinhaRepository;
+  public purchaseRepository: PurchaseRepository;
+  public userService: UserService;
+  public raspadinhaService: RaspadinhaService;
+  public purchaseService: PurchaseService;
+  public authService: AuthService;
+  public userController: UserController;
+  public raspadinhaController: RaspadinhaController;
+  public purchaseController: PurchaseController;
+  public authController: AuthController;
+  public authMiddleware: AuthMiddleware;
 
   constructor() {
-    // Instanciar repositórios
-    this.raspadinhaRepository = new RaspadinhaRepository();
     this.userRepository = new UserRepository();
+    this.raspadinhaRepository = new RaspadinhaRepository();
     this.purchaseRepository = new PurchaseRepository();
-
-    // Instanciar serviços com injeção de dependência
-    this.raspadinhaService = new RaspadinhaService(this.raspadinhaRepository);
+    
     this.userService = new UserService(this.userRepository);
-    this.authService = new AuthService(this.userService);
-    this.purchaseService = new PurchaseService(
-      this.purchaseRepository,
-      this.raspadinhaService,
-      this.userService
-    );
-
-    // Instanciar controladores com injeção de dependência
-    this.raspadinhaController = new RaspadinhaController(this.raspadinhaService);
+    this.raspadinhaService = new RaspadinhaService(this.raspadinhaRepository);
+    this.purchaseService = new PurchaseService(this.purchaseRepository, this.raspadinhaRepository, this.userRepository);
+    this.authService = new AuthService(this.userRepository);
+    
     this.userController = new UserController(this.userService);
+    this.raspadinhaController = new RaspadinhaController(this.raspadinhaService);
     this.purchaseController = new PurchaseController(this.purchaseService);
     this.authController = new AuthController(this.authService);
-
-    // Instanciar middlewares
+    
     this.authMiddleware = new AuthMiddleware(this.authService);
   }
 
-  // Método para inicializar dados de exemplo (útil para desenvolvimento)
-  async initializeData(): Promise<void> {
-    try {
-      // Criar usuário admin padrão
-      await this.userService.create({
-        name: 'Administrador',
-        email: 'admin../raspadinhadasorte.com',
-        password: 'admin123',
-        role: 'admin' as any
-      });
-
-      // Criar raspadinha de exemplo
-      await this.raspadinhaService.create({
-        title: 'Raspadinha de Exemplo',
-        description: 'Uma raspadinha para testar o sistema',
-        image: 'exemplo.jpg',
-        price: 5.00,
-        totalCards: 100,
-        prizes: [
-          {
-            id: 'prize1',
-            type: 'money' as any,
-            name: 'R$ 50,00',
-            value: 50,
-            probability: 5
-          },
-          {
-            id: 'prize2',
-            type: 'money' as any,
-            name: 'R$ 20,00',
-            value: 20,
-            probability: 10
-          },
-          {
-            id: 'prize3',
-            type: 'money' as any,
-            name: 'R$ 5,00',
-            value: 5,
-            probability: 25
-          }
-        ]
-      });
-
-      console.log('Dados iniciais carregados com sucesso!');
-    } catch (error) {
-      console.log('Dados já existem ou erro ao carregar:', error);
-    }
+  public static async create(): Promise<Container> {
+    // Inicializar conexão com o banco de dados
+    await initializeDatabase();
+    return new Container();
   }
 } 

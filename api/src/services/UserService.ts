@@ -1,5 +1,5 @@
 import { User, UserRole } from '../entities/User';
-import { IUserRepository } from '../repositories/UserRepository';
+import { UserRepository } from '../repositories/UserRepository';
 import * as bcrypt from 'bcryptjs';
 
 export interface IUserService {
@@ -14,7 +14,7 @@ export interface IUserService {
 }
 
 export class UserService implements IUserService {
-  constructor(private userRepository: IUserRepository) {}
+  constructor(private userRepository: UserRepository) {}
 
   async getAll(): Promise<User[]> {
     return this.userRepository.findAll();
