@@ -1,117 +1,788 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="dark">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma Premiada - Versão Definitiva</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome para Ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --bg-light-dark: #1e1e1e;
+            --bg-card: #2a2a2a;
+            --primary-gold: #f5b942;
+            --primary-gold-hover: #ffc95e;
+            --text-light: #f5f5f5;
+            --text-grey: #a9a9a9;
+            --green-live: #1db954;
+            --blue-accent: #3a7bd5;
+            --red-logout: #e53935;
+            --shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+            --border-radius: 12px;
+            --transition-speed: 0.3s;
+        }
+
+        /* --- ESTILOS GERAIS E DE LAYOUT --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        html { scroll-behavior: smooth; }
+        body { background-color: var(--bg-dark); color: var(--text-light); }
+        .container { width: 92%; max-width: 1400px; margin: 0 auto; }
+        .page-container { display: none; padding: 20px 0 40px; }
+        .page-container.active { display: block; animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .page-title { font-family: 'Poppins', sans-serif; font-size: 2.5rem; margin-bottom: 30px; }
+        .card { background-color: var(--bg-card); border-radius: var(--border-radius); padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+
+        /* --- MODAL, BLUR e NOTIFICAÇÃO (TOAST) --- */
+        #main-site-container { transition: filter var(--transition-speed) ease; }
+        #main-site-container.blurred { filter: blur(5px) brightness(0.6); pointer-events: none; user-select: none; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity var(--transition-speed), visibility var(--transition-speed); }
+        .modal-overlay.visible { opacity: 1; visibility: visible; }
+        .modal-content { background-color: #212121; padding: 30px; border-radius: var(--border-radius); width: 90%; max-width: 420px; text-align: center; position: relative; transform: scale(0.95); transition: transform var(--transition-speed); }
+        .modal-overlay.visible .modal-content { transform: scale(1); }
+        .modal-logo { font-family: 'Poppins', sans-serif; font-weight: 800; font-size: 1.5rem; color: var(--primary-gold); margin-bottom: 25px; }
+        .close-modal { position: absolute; top: 15px; right: 15px; background: none; border: none; color: var(--text-grey); font-size: 1.8rem; cursor: pointer; }
+        .auth-tabs { display: flex; border-bottom: 1px solid var(--bg-light-dark); margin-bottom: 25px; }
+        .auth-tabs button { flex: 1; background: none; border: none; color: var(--text-grey); font-size: 1rem; font-weight: 600; padding-bottom: 15px; cursor: pointer; border-bottom: 3px solid transparent; transition: all var(--transition-speed); }
+        .auth-tabs button.active { color: var(--primary-gold); border-bottom-color: var(--primary-gold); }
+        .auth-form { display: none; }
+        .auth-form.active { display: block; animation: fadeIn 0.4s; }
+        .form-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 20px; }
+        .input-group { position: relative; margin-bottom: 15px; }
+        .input-group i { position: absolute; top: 50%; left: 15px; transform: translateY(-50%); color: var(--text-grey); }
+        .input-group input { width: 100%; padding: 12px 15px 12px 45px; background-color: var(--bg-light-dark); border: 1px solid #444; border-radius: 8px; color: var(--text-light); font-size: 1rem; }
+        .modal-content .submit-btn { width: 100%; padding: 15px; background: var(--primary-gold); color: var(--bg-dark); border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; margin-top: 10px; transition: background-color var(--transition-speed); }
+        .modal-content .submit-btn:hover { background-color: var(--primary-gold-hover); }
+        .switch-form-link { margin-top: 20px; font-size: 0.9rem; }
+        .switch-form-link a { color: var(--primary-gold); text-decoration: none; font-weight: 600; cursor: pointer; }
+        #toast-notification { position: fixed; top: 20px; right: 20px; background-color: var(--green-live); color: var(--text-light); padding: 15px 25px; border-radius: 8px; z-index: 2000; box-shadow: var(--shadow); opacity: 0; transform: translateX(120%); transition: opacity 0.4s ease, transform 0.4s ease; }
+        #toast-notification.show { opacity: 1; transform: translateX(0); }
+        .register-step { display: none; }
+        .register-step.active { display: block; animation: fadeIn 0.4s; }
+
+        /* --- CONTROLE DE ESTADO LOGIN/LOGOUT --- */
+        .logged-out .header-logged-in, .logged-out .user-dropdown { display: none !important; }
+        .logged-in .header-logged-out { display: none !important; }
+
+        /* --- CABEÇALHOS --- */
+        .main-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--bg-light-dark); }
+        .logo { font-family: 'Poppins', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--primary-gold); flex-shrink: 0; }
+        .header-logged-out .nav-buttons { display: flex; gap: 15px; }
+        .btn-register, .btn-login { background: transparent; border: 2px solid var(--primary-gold); color: var(--primary-gold); padding: 10px 25px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all var(--transition-speed); }
+        .btn-login { background: var(--primary-gold); color: var(--bg-dark); }
+        .btn-register:hover { background: var(--primary-gold); color: var(--bg-dark); }
+        .header-logged-in .header-center { display: flex; align-items: center; gap: 20px; }
+        .header-logged-in .wallet { font-weight: 600; font-size: 1.1rem; }
+        .header-logged-in .btn-deposit { background-color: var(--primary-gold); color: var(--bg-dark); padding: 10px 20px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background-color var(--transition-speed); }
+        .header-logged-in .btn-deposit:hover { background-color: var(--primary-gold-hover); }
+        .header-logged-in .header-right { position: relative; cursor: pointer; }
+        .user-profile { display: flex; align-items: center; gap: 10px; }
+        .user-profile .user-name-text { white-space: nowrap; }
+        .user-profile .avatar { width: 40px; height: 40px; background-color: var(--bg-light-dark); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: 700; color: var(--primary-gold); }
+        .user-dropdown { position: absolute; top: 120%; right: 0; background-color: var(--bg-card); border-radius: var(--border-radius); width: 280px; padding: 15px; z-index: 100; box-shadow: var(--shadow); opacity: 0; visibility: hidden; transform: translateY(-10px); transition: opacity 0.2s, visibility 0.2s, transform 0.2s; }
+        .user-dropdown.active { opacity: 1; visibility: visible; transform: translateY(0); }
+        .dropdown-menu a { display: flex; align-items: center; gap: 15px; color: var(--text-light); text-decoration: none; padding: 12px; border-radius: 8px; font-weight: 500; }
+        .dropdown-menu a:hover { background-color: #444; }
+        .dropdown-menu a.logout { color: var(--red-logout); }
+        .dropdown-menu a i { width: 20px; text-align: center; }
         
-        <!-- PWA Meta Tags -->
-        <meta name="theme-color" content="#1f2937">
-        <meta name="apple-mobile-web-app-capable" content="yes">
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-        <meta name="apple-mobile-web-app-title" content="Raspou, levou!">
-        <link rel="manifest" href="https://raspadinhaspremiada.com/manifest.json">
+        /* --- CARROSSEL E SEÇÃO AO VIVO --- */
+        .carousel-container {
+            width: 100%;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            position: relative;
+            /* Deixar o CSS controlar a altura por aspecto, para evitar jumps no mobile */
+            aspect-ratio: 16 / 9;
+            background: #0f0f0f;
+        }
+        /* Em telas menores, um banner mais alto favorece o "contain" sem barras minúsculas */
+        @media (max-width: 768px) {
+            .carousel-container { aspect-ratio: 4 / 3; }
+        }
+        .carousel-track {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+            height: 100%; /* Importante para que os slides e imagens ocupem toda a altura do container */
+        }
+        .carousel-slide {
+            min-width: 100%;
+            flex-shrink: 0;
+            height: 100%;
+            position: relative;
+            background: #0f0f0f;
+        }
+        .carousel-slide img {
+            position: absolute;
+            inset: 0;
+            margin: auto;
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: contain; /* MOSTRAR TODA A IMAGEM */
+            pointer-events: none;
+            -webkit-user-drag: none;
+            user-select: none;
+        }
+        .carousel-dots {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 2;
+        }
+        .carousel-dot {
+            width: 12px;
+            height: 12px;
+            border: none;
+            padding: 0;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: background-color var(--transition-speed), transform var(--transition-speed);
+        }
+        .carousel-dot.active { background-color: var(--primary-gold); transform: scale(1.05); }
 
-        <style>
-            html {
-                background-color: oklch(0.1732 0.0109 268.05);
-            }
-          
-        </style>
+        .live-winners-section { display: flex; margin-bottom: 40px; }
+        .live-tag { background-color: var(--green-live); padding: 20px; border-radius: 10px; font-weight: 700; text-align: center; align-self: stretch; flex-shrink: 0; display: flex; align-items: center; gap: 10px; }
+        .blinking-dot { width: 12px; height: 12px; background-color: #fff; border-radius: 50%; animation: blink-animation 1.5s infinite ease-in-out; }
+        @keyframes blink-animation { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        .winners-scroll-container { flex-grow: 1; display: flex; gap: 15px; overflow: hidden; padding-left: 15px; }
+        .winner-card { background-color: var(--bg-card); padding: 10px 15px; border-radius: 10px; display: flex; align-items: center; gap: 15px; min-width: 220px; flex-shrink: 0; opacity: 1; transform: translateX(0); transition: opacity 0.5s ease-out, transform 0.5s ease-out; }
+        .winner-card img { width: 40px; height: 40px; border-radius: 50%; }
+        .winner-card.entering { opacity: 0; transform: translateX(50px); }
+        .winner-card.exiting { opacity: 0; transform: translateX(-50px); }
+        .filter-tabs { display: flex; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
+        .filter-tabs button { background-color: var(--bg-light-dark); color: var(--text-grey); border: none; padding: 10px 20px; border-radius: 20px; font-weight: 600; cursor: pointer; transition: all var(--transition-speed); }
+        .filter-tabs button.active { background-color: var(--primary-gold); color: var(--bg-dark); }
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
+        .scratch-card { background-color: var(--bg-card); border-radius: var(--border-radius); overflow: hidden; display: flex; flex-direction: column; transition: transform var(--transition-speed), box-shadow var(--transition-speed); cursor: pointer; }
+        .scratch-card:hover { transform: translateY(-5px); box-shadow: 0 8px 30px rgba(0,0,0,0.5); }
+        .scratch-card .card-image { height: 160px; background-color: #555; position: relative; background-size: cover; background-position: center; }
+        .scratch-card .price-tag { position: absolute; top: 10px; right: 10px; background-color: rgba(0, 0, 0, 0.7); padding: 5px 12px; border-radius: 8px; font-weight: 700; color: var(--primary-gold); }
+        .scratch-card .card-content { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
+        .scratch-card h4 { font-family: 'Poppins'; font-size: 1.2rem; margin-bottom: 5px; }
+        .scratch-card .prize-info { font-weight: 700; color: var(--primary-gold); margin-bottom: 10px; }
+        .scratch-card .description { color: var(--text-grey); font-size: 0.9rem; margin-bottom: 20px; flex-grow: 1; }
 
-        <title inertia>Raspou, levou!</title>
-
-                    <link rel="icon" href="/images/settings/icon_1754096008.webp" sizes="any">
-            <link rel="icon" href="/images/settings/icon_1754096008.webp" type="image/svg+xml">
-            <link rel="apple-touch-icon" href="/images/settings/icon_1754096008.webp">
+        /* --- PÁGINA DO JOGO (RASPADINHA) --- */
+        #game-page { max-width: 700px; margin: 0 auto; }
+        .game-board { background-color: var(--bg-card); border-radius: var(--border-radius); padding: 20px; position: relative; aspect-ratio: 1 / 1; }
+        .scratch-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; gap: 10px; width: 100%; height: 100%; }
+        .scratch-cell { position: relative; background-color: var(--bg-light-dark); border-radius: 8px; overflow: hidden; }
+        .prize-image { width: 100%; height: 100%; object-fit: contain; padding: 15%; }
+        .scratch-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="%23f5b942" stroke="%23FFFFFF" stroke-width="2"/></svg>') 16 16, auto; }
+        .locked-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 10; border-radius: var(--border-radius); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 15px; opacity: 1; transition: opacity var(--transition-speed); }
+        .locked-overlay.hidden { opacity: 0; pointer-events: none; }
+        .locked-overlay i { font-size: 4rem; color: var(--text-grey); }
+        .locked-overlay h3 { font-family: 'Poppins'; font-size: 2rem; }
+        .purchase-bar { display: flex; align-items: center; background-color: var(--bg-card); padding: 15px; border-radius: var(--border-radius); margin-top: 20px; }
+        .purchase-bar button { flex-grow: 1; background-color: var(--primary-gold); color: var(--bg-dark); border: none; padding: 15px; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; }
+        .purchase-bar .price { font-size: 1.2rem; font-weight: 700; background-color: var(--bg-dark); padding: 10px 15px; border-radius: 8px; margin-left: 15px; }
+        .game-info { margin-top: 30px; }
+        .possible-prizes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; }
+        .possible-prizes-grid img { width: 100%; background-color: var(--bg-light-dark); border-radius: 8px; padding: 10px; }
         
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+        /* --- PÁGINA DE DEPÓSITO --- */
+        #deposit-page { max-width: 600px; margin: 0 auto; }
+        .deposit-options-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin: 20px 0; }
+        .deposit-options-grid button { background-color: var(--bg-card); border: 1px solid #444; color: var(--text-light); padding: 15px; width: 100%; border-radius: 8px; font-size: 1rem; cursor: pointer; }
+        #deposit-amount { width: 100%; padding: 15px; background-color: var(--bg-light-dark); border: 1px solid #555; border-radius: 8px; color: var(--text-light); font-size: 1.5rem; text-align: center; }
+        .pix-display { text-align: center; }
+        .pix-display img { max-width: 250px; width: 100%; border-radius: 8px; margin: 20px 0; }
+        .pix-copy-paste { background-color: var(--bg-light-dark); padding: 15px; border-radius: 8px; word-wrap: break-word; }
+        
+        /* --- OUTRAS PÁGINAS --- */
+        .wallet-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; margin-bottom: 40px; }
+        .balance-card h3 { font-size: 1rem; color: var(--text-grey); margin-bottom: 10px; }
+        .balance-card .amount { font-family: 'Poppins', sans-serif; font-size: 2.5rem; color: var(--primary-gold); }
+        .transaction-table { width: 100%; border-collapse: collapse; }
+        .transaction-table th, .transaction-table td { padding: 15px; text-align: left; border-bottom: 1px solid var(--bg-light-dark); }
+        .transaction-table th { color: var(--text-grey); font-size: 0.9rem; text-transform: uppercase; }
+        .status { padding: 5px 10px; border-radius: 6px; font-weight: 600; font-size: 0.8rem; }
+        .status.completed { background-color: rgba(29, 185, 84, 0.2); color: var(--green-live); }
+        .status.pending { background-color: rgba(245, 185, 66, 0.2); color: var(--primary-gold); }
+        .bonus-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
+        .bonus-card { border-left: 5px solid var(--primary-gold); }
+        .bonus-card h4 { font-size: 1.3rem; margin-bottom: 10px; }
+        .bonus-card p { color: var(--text-grey); margin-bottom: 20px; }
+        .btn-activate { width: 100%; padding: 12px; background: var(--blue-accent); border:none; border-radius: 8px; color: var(--text-light); font-weight: 600; cursor: pointer; }
+        .delivery-item { display: flex; flex-wrap: wrap; gap: 25px; align-items: center; margin-bottom: 30px; }
+        .delivery-item .item-image { width: 100px; height: 100px; background-color: var(--bg-light-dark); border-radius: var(--border-radius); flex-shrink: 0; }
+        .delivery-details { flex: 1; min-width: 250px; }
+        .delivery-details h4 { margin-bottom: 10px; }
+        .delivery-tracker { display: flex; list-style: none; margin-top: 15px; width: 100%; }
+        .tracker-step { flex: 1; text-align: center; position: relative; }
+        .tracker-step::before { content: ''; position: absolute; top: 12px; left: -50%; width: 100%; height: 4px; background-color: var(--bg-light-dark); z-index: -1; }
+        .tracker-step:first-child::before { width: 0; }
+        .step-dot { width: 24px; height: 24px; background: var(--bg-light-dark); border: 4px solid var(--bg-dark); border-radius: 50%; display: inline-block; position: relative; z-index: 1; transition: background-color var(--transition-speed); }
+        .tracker-step.completed .step-dot { background: var(--green-live); }
+        .tracker-step.completed::before { background: var(--green-live); }
+        .step-label { font-size: 0.8rem; margin-top: 8px; color: var(--text-grey); }
+        .referral-card { text-align: center; }
+        .referral-card p { max-width: 500px; margin: 0 auto 30px; color: var(--text-grey); }
+        .referral-code-wrapper { display: flex; justify-content: center; margin-bottom: 30px; }
+        .referral-code { background-color: var(--bg-dark); border: 2px dashed var(--primary-gold); padding: 15px 30px; font-size: 1.2rem; font-weight: 600; border-right: none; border-radius: 8px 0 0 8px; }
+        .btn-copy { background: var(--primary-gold); color: var(--bg-dark); border: none; padding: 15px 25px; font-weight: 700; cursor: pointer; border-radius: 0 8px 8px 0; }
+        .referral-stats { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; }
+        .stat-item h3 { font-size: 2rem; }
+        .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 40px; }
+        .settings-form h4 { font-size: 1.3rem; margin-bottom: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-grey); }
+        .form-group input { width: 100%; padding: 12px; background-color: var(--bg-light-dark); border: 1px solid #555; border-radius: 8px; color: var(--text-light); font-size: 1rem; }
+        .btn-save { padding: 12px 30px; background: var(--blue-accent); border: none; border-radius: 8px; color: var(--text-light); font-weight: 600; cursor: pointer; }
 
-        <script type="text/javascript">const Ziggy={"url":"https:\/\/raspadinhaspremiada.com","port":null,"defaults":{},"routes":{"sanctum.csrf-cookie":{"uri":"sanctum\/csrf-cookie","methods":["GET","HEAD"]},"dashboard":{"uri":"\/","methods":["GET","HEAD"]},"affiliate.ref":{"uri":"ref\/{slug}","methods":["GET","HEAD"],"parameters":["slug"]},"affiliate.ref.bonus":{"uri":"ref\/{slug}\/{bonusCode}","methods":["GET","HEAD"],"parameters":["slug","bonusCode"]},"terms":{"uri":"terms","methods":["GET","HEAD"]},"privacy":{"uri":"privacy","methods":["GET","HEAD"]},"funil-demo.show":{"uri":"jogadagratis\/{id}\/ref\/{ref}\/{bonusCode}","methods":["GET","HEAD"],"parameters":["id","ref","bonusCode"]},"funil-demo.jogar":{"uri":"jogadagratis\/{id}\/ref\/{ref}\/{bonusCode}\/jogar","methods":["POST"],"parameters":["id","ref","bonusCode"]},"funil-demo.resgatar":{"uri":"jogadagratis\/{id}\/ref\/{ref}\/{bonusCode}\/resgatar","methods":["POST"],"parameters":["id","ref","bonusCode"]},"raspadinha.show":{"uri":"raspadinha\/{raspadinha}","methods":["GET","HEAD"],"parameters":["raspadinha"],"bindings":{"raspadinha":"id"}},"raspadinha.comprar":{"uri":"raspadinha\/{raspadinha}\/comprar","methods":["POST"],"parameters":["raspadinha"],"bindings":{"raspadinha":"id"}},"test.pixel":{"uri":"test-pixel","methods":["GET","HEAD"]},"deposito.index":{"uri":"account\/deposito","methods":["GET","HEAD"]},"deposito.store":{"uri":"account\/deposito","methods":["POST"]},"deposito.qrcode":{"uri":"account\/deposito\/qrcode","methods":["GET","HEAD"]},"deposito.verificar":{"uri":"account\/deposito\/verificar","methods":["POST"]},"deposito.sucesso":{"uri":"account\/deposito\/sucesso","methods":["GET","HEAD"]},"saque.index":{"uri":"account\/saque","methods":["GET","HEAD"]},"saque.store":{"uri":"account\/saque","methods":["POST"]},"saque.afiliado.store":{"uri":"account\/saque\/afiliado","methods":["POST"]},"user.document.update":{"uri":"account\/document","methods":["POST"]},"account.carteira":{"uri":"account\/carteira","methods":["GET","HEAD"]},"account.carrinho":{"uri":"account\/carrinho","methods":["GET","HEAD"]},"carrinho.converter":{"uri":"account\/carrinho\/{item}\/converter","methods":["POST"],"parameters":["item"],"bindings":{"item":"id"}},"carrinho.converter-todos":{"uri":"account\/carrinho\/converter-todos","methods":["POST"]},"carrinho.entrega":{"uri":"account\/carrinho\/{item}\/entrega","methods":["POST"],"parameters":["item"],"bindings":{"item":"id"}},"account.indique":{"uri":"account\/indique","methods":["GET","HEAD"]},"account.afiliacao":{"uri":"account\/afiliacao","methods":["GET","HEAD"]},"afiliado.cofres.claim":{"uri":"account\/afiliado\/cofres\/claim","methods":["POST"]},"entregas.index":{"uri":"account\/entregas","methods":["GET","HEAD"]},"entregas.show":{"uri":"account\/entregas\/{entrega}","methods":["GET","HEAD"],"parameters":["entrega"],"bindings":{"entrega":"id"}},"account.bonus":{"uri":"account\/bonus","methods":["GET","HEAD"]},"bonus.resgatar":{"uri":"account\/bonus\/{bonus}\/resgatar","methods":["POST"],"parameters":["bonus"],"bindings":{"bonus":"id"}},"admin.dashboard":{"uri":"admin\/dashboard","methods":["GET","HEAD"]},"admin.depositos.index":{"uri":"admin\/depositos","methods":["GET","HEAD"]},"admin.depositos.show":{"uri":"admin\/depositos\/{deposit}","methods":["GET","HEAD"],"parameters":["deposit"]},"admin.depositos.approve":{"uri":"admin\/depositos\/{deposit}\/aprovar","methods":["POST"],"parameters":["deposit"]},"admin.depositos.cancel":{"uri":"admin\/depositos\/{deposit}\/cancelar","methods":["POST"],"parameters":["deposit"]},"admin.saques.index":{"uri":"admin\/saques","methods":["GET","HEAD"]},"admin.saques.show":{"uri":"admin\/saques\/{withdrawal}","methods":["GET","HEAD"],"parameters":["withdrawal"]},"admin.saques.approve":{"uri":"admin\/saques\/{withdrawal}\/aprovar","methods":["POST"],"parameters":["withdrawal"]},"admin.saques.reject":{"uri":"admin\/saques\/{withdrawal}\/recusar","methods":["POST"],"parameters":["withdrawal"]},"admin.usuarios.index":{"uri":"admin\/usuarios","methods":["GET","HEAD"]},"admin.usuarios.create":{"uri":"admin\/usuarios\/create","methods":["GET","HEAD"]},"admin.usuarios.store":{"uri":"admin\/usuarios","methods":["POST"]},"admin.usuarios.show":{"uri":"admin\/usuarios\/{user}","methods":["GET","HEAD"],"parameters":["user"],"bindings":{"user":"id"}},"admin.usuarios.edit":{"uri":"admin\/usuarios\/{user}\/edit","methods":["GET","HEAD"],"parameters":["user"],"bindings":{"user":"id"}},"admin.usuarios.update":{"uri":"admin\/usuarios\/{user}","methods":["PUT"],"parameters":["user"],"bindings":{"user":"id"}},"admin.usuarios.destroy":{"uri":"admin\/usuarios\/{user}","methods":["DELETE"],"parameters":["user"],"bindings":{"user":"id"}},"admin.afiliados.index":{"uri":"admin\/afiliados","methods":["GET","HEAD"]},"admin.gerentes.index":{"uri":"admin\/gerentes","methods":["GET","HEAD"]},"admin.settings.edit":{"uri":"admin\/configuracoes","methods":["GET","HEAD"]},"admin.settings.update":{"uri":"admin\/configuracoes","methods":["PUT"]},"admin.gateways.index":{"uri":"admin\/gateways","methods":["GET","HEAD"]},"admin.gateways.update-all":{"uri":"admin\/gateways\/update-all","methods":["POST"]},"admin.gateways.update":{"uri":"admin\/gateways\/{gateway}","methods":["PUT"],"parameters":["gateway"],"bindings":{"gateway":"id"}},"admin.gateways.toggle-status":{"uri":"admin\/gateways\/{gateway}\/toggle-status","methods":["PUT"],"parameters":["gateway"],"bindings":{"gateway":"id"}},"admin.categories.index":{"uri":"admin\/categories","methods":["GET","HEAD"]},"admin.categories.create":{"uri":"admin\/categories\/create","methods":["GET","HEAD"]},"admin.categories.store":{"uri":"admin\/categories","methods":["POST"]},"admin.categories.show":{"uri":"admin\/categories\/{category}","methods":["GET","HEAD"],"parameters":["category"],"bindings":{"category":"id"}},"admin.categories.edit":{"uri":"admin\/categories\/{category}\/edit","methods":["GET","HEAD"],"parameters":["category"],"bindings":{"category":"id"}},"admin.categories.update":{"uri":"admin\/categories\/{category}","methods":["PUT"],"parameters":["category"],"bindings":{"category":"id"}},"admin.categories.destroy":{"uri":"admin\/categories\/{category}","methods":["DELETE"],"parameters":["category"],"bindings":{"category":"id"}},"admin.categories.toggle-status":{"uri":"admin\/categories\/{category}\/toggle-status","methods":["PUT"],"parameters":["category"],"bindings":{"category":"id"}},"admin.categories.update-order":{"uri":"admin\/categories\/update-order","methods":["POST"]},"admin.banners.index":{"uri":"admin\/banners","methods":["GET","HEAD"]},"admin.banners.create":{"uri":"admin\/banners\/create","methods":["GET","HEAD"]},"admin.banners.store":{"uri":"admin\/banners","methods":["POST"]},"admin.banners.show":{"uri":"admin\/banners\/{banner}","methods":["GET","HEAD"],"parameters":["banner"],"bindings":{"banner":"id"}},"admin.banners.edit":{"uri":"admin\/banners\/{banner}\/edit","methods":["GET","HEAD"],"parameters":["banner"],"bindings":{"banner":"id"}},"admin.banners.update":{"uri":"admin\/banners\/{banner}","methods":["PUT"],"parameters":["banner"],"bindings":{"banner":"id"}},"admin.banners.destroy":{"uri":"admin\/banners\/{banner}","methods":["DELETE"],"parameters":["banner"],"bindings":{"banner":"id"}},"admin.banners.toggle-status":{"uri":"admin\/banners\/{banner}\/toggle-status","methods":["PUT"],"parameters":["banner"],"bindings":{"banner":"id"}},"admin.banners.update-order":{"uri":"admin\/banners\/update-order","methods":["POST"]},"admin.stories.index":{"uri":"admin\/stories","methods":["GET","HEAD"]},"admin.stories.create":{"uri":"admin\/stories\/create","methods":["GET","HEAD"]},"admin.stories.store":{"uri":"admin\/stories","methods":["POST"]},"admin.stories.edit":{"uri":"admin\/stories\/{story}\/edit","methods":["GET","HEAD"],"parameters":["story"],"bindings":{"story":"id"}},"admin.stories.update":{"uri":"admin\/stories\/{story}","methods":["PUT"],"parameters":["story"],"bindings":{"story":"id"}},"admin.stories.destroy":{"uri":"admin\/stories\/{story}","methods":["DELETE"],"parameters":["story"],"bindings":{"story":"id"}},"admin.stories.update-order":{"uri":"admin\/stories\/update-order","methods":["POST"]},"admin.themes.index":{"uri":"admin\/temas","methods":["GET","HEAD"]},"admin.themes.store":{"uri":"admin\/temas","methods":["POST"]},"admin.themes.update":{"uri":"admin\/temas\/{theme}","methods":["PUT"],"parameters":["theme"],"bindings":{"theme":"id"}},"admin.themes.activate":{"uri":"admin\/temas\/{theme}\/activate","methods":["POST"],"parameters":["theme"],"bindings":{"theme":"id"}},"admin.themes.destroy":{"uri":"admin\/temas\/{theme}","methods":["DELETE"],"parameters":["theme"],"bindings":{"theme":"id"}},"admin.themes.preview":{"uri":"admin\/temas\/{theme}\/preview","methods":["GET","HEAD"],"parameters":["theme"],"bindings":{"theme":"id"}},"admin.raspadinhas.index":{"uri":"admin\/raspadinhas","methods":["GET","HEAD"]},"admin.raspadinhas.create":{"uri":"admin\/raspadinhas\/create","methods":["GET","HEAD"]},"admin.raspadinhas.store":{"uri":"admin\/raspadinhas","methods":["POST"]},"admin.raspadinhas.show":{"uri":"admin\/raspadinhas\/{raspadinha}","methods":["GET","HEAD"],"parameters":["raspadinha"],"bindings":{"raspadinha":"id"}},"admin.raspadinhas.edit":{"uri":"admin\/raspadinhas\/{raspadinha}\/edit","methods":["GET","HEAD"],"parameters":["raspadinha"],"bindings":{"raspadinha":"id"}},"admin.raspadinhas.update":{"uri":"admin\/raspadinhas\/{raspadinha}","methods":["PUT"],"parameters":["raspadinha"],"bindings":{"raspadinha":"id"}},"admin.raspadinhas.destroy":{"uri":"admin\/raspadinhas\/{raspadinha}","methods":["DELETE"],"parameters":["raspadinha"],"bindings":{"raspadinha":"id"}},"admin.raspadinhas.toggle-status":{"uri":"admin\/raspadinhas\/{raspadinha}\/toggle-status","methods":["PUT"],"parameters":["raspadinha"],"bindings":{"raspadinha":"id"}},"admin.raspadinhas.update-order":{"uri":"admin\/raspadinhas\/update-order","methods":["POST"]},"admin.raspadinhas.premiacoes.index":{"uri":"admin\/raspadinhas\/{raspadinha}\/premiacoes","methods":["GET","HEAD"],"parameters":["raspadinha"],"bindings":{"raspadinha":"id"}},"admin.raspadinhas.premiacoes.create":{"uri":"admin\/raspadinhas\/{raspadinha}\/premiacoes\/create","methods":["GET","HEAD"],"parameters":["raspadinha"],"bindings":{"raspadinha":"id"}},"admin.raspadinhas.premiacoes.store":{"uri":"admin\/raspadinhas\/{raspadinha}\/premiacoes","methods":["POST"],"parameters":["raspadinha"],"bindings":{"raspadinha":"id"}},"admin.raspadinhas.premiacoes.show":{"uri":"admin\/raspadinhas\/{raspadinha}\/premiacoes\/{premiacao}","methods":["GET","HEAD"],"parameters":["raspadinha","premiacao"],"bindings":{"raspadinha":"id","premiacao":"id"}},"admin.raspadinhas.premiacoes.edit":{"uri":"admin\/raspadinhas\/{raspadinha}\/premiacoes\/{premiacao}\/edit","methods":["GET","HEAD"],"parameters":["raspadinha","premiacao"],"bindings":{"raspadinha":"id","premiacao":"id"}},"admin.raspadinhas.premiacoes.update":{"uri":"admin\/raspadinhas\/{raspadinha}\/premiacoes\/{premiacao}","methods":["PUT"],"parameters":["raspadinha","premiacao"],"bindings":{"raspadinha":"id","premiacao":"id"}},"admin.raspadinhas.premiacoes.destroy":{"uri":"admin\/raspadinhas\/{raspadinha}\/premiacoes\/{premiacao}","methods":["DELETE"],"parameters":["raspadinha","premiacao"],"bindings":{"raspadinha":"id","premiacao":"id"}},"admin.entregas.index":{"uri":"admin\/entregas","methods":["GET","HEAD"]},"admin.entregas.show":{"uri":"admin\/entregas\/{entrega}","methods":["GET","HEAD"],"parameters":["entrega"],"bindings":{"entrega":"id"}},"admin.entregas.update":{"uri":"admin\/entregas\/{entrega}","methods":["PUT"],"parameters":["entrega"],"bindings":{"entrega":"id"}},"admin.entregas.destroy":{"uri":"admin\/entregas\/{entrega}","methods":["DELETE"],"parameters":["entrega"],"bindings":{"entrega":"id"}},"admin.historico.index":{"uri":"admin\/historico","methods":["GET","HEAD"]},"admin.historico.show":{"uri":"admin\/historico\/{resultado}","methods":["GET","HEAD"],"parameters":["resultado"],"bindings":{"resultado":"id"}},"admin.historico.destroy":{"uri":"admin\/historico\/{resultado}","methods":["DELETE"],"parameters":["resultado"],"bindings":{"resultado":"id"}},"admin.comissoes.index":{"uri":"admin\/comissoes","methods":["GET","HEAD"]},"admin.comissoes.show":{"uri":"admin\/comissoes\/{commission}","methods":["GET","HEAD"],"parameters":["commission"]},"admin.bonus.index":{"uri":"admin\/bonus","methods":["GET","HEAD"]},"admin.bonus.create":{"uri":"admin\/bonus\/create","methods":["GET","HEAD"]},"admin.bonus.store":{"uri":"admin\/bonus","methods":["POST"]},"admin.bonus.show":{"uri":"admin\/bonus\/{bonus}","methods":["GET","HEAD"],"parameters":["bonus"],"bindings":{"bonus":"id"}},"admin.bonus.edit":{"uri":"admin\/bonus\/{bonus}\/edit","methods":["GET","HEAD"],"parameters":["bonus"],"bindings":{"bonus":"id"}},"admin.bonus.update":{"uri":"admin\/bonus\/{bonus}","methods":["PUT"],"parameters":["bonus"],"bindings":{"bonus":"id"}},"admin.bonus.destroy":{"uri":"admin\/bonus\/{bonus}","methods":["DELETE"],"parameters":["bonus"],"bindings":{"bonus":"id"}},"admin.funil-demo.index":{"uri":"admin\/funil-demo","methods":["GET","HEAD"]},"admin.funil-demo.create":{"uri":"admin\/funil-demo\/create","methods":["GET","HEAD"]},"admin.funil-demo.store":{"uri":"admin\/funil-demo","methods":["POST"]},"admin.funil-demo.show":{"uri":"admin\/funil-demo\/{funilDemo}","methods":["GET","HEAD"],"parameters":["funilDemo"],"bindings":{"funilDemo":"id"}},"admin.funil-demo.edit":{"uri":"admin\/funil-demo\/{funilDemo}\/edit","methods":["GET","HEAD"],"parameters":["funilDemo"],"bindings":{"funilDemo":"id"}},"admin.funil-demo.update":{"uri":"admin\/funil-demo\/{funilDemo}","methods":["PUT"],"parameters":["funilDemo"],"bindings":{"funilDemo":"id"}},"admin.funil-demo.destroy":{"uri":"admin\/funil-demo\/{funilDemo}","methods":["DELETE"],"parameters":["funilDemo"],"bindings":{"funilDemo":"id"}},"admin.funil-demo.toggle-status":{"uri":"admin\/funil-demo\/{funilDemo}\/toggle-status","methods":["PUT"],"parameters":["funilDemo"],"bindings":{"funilDemo":"id"}},"admin.funil-demo.gerar-url":{"uri":"admin\/funil-demo\/{funilDemo}\/gerar-url","methods":["GET","HEAD"],"parameters":["funilDemo"],"bindings":{"funilDemo":"id"}},"admin.tracking-pixels.index":{"uri":"admin\/tracking-pixels","methods":["GET","HEAD"]},"admin.tracking-pixels.create":{"uri":"admin\/tracking-pixels\/create","methods":["GET","HEAD"]},"admin.tracking-pixels.store":{"uri":"admin\/tracking-pixels","methods":["POST"]},"admin.tracking-pixels.show":{"uri":"admin\/tracking-pixels\/{pixel}","methods":["GET","HEAD"],"parameters":["pixel"]},"admin.tracking-pixels.edit":{"uri":"admin\/tracking-pixels\/{pixel}\/edit","methods":["GET","HEAD"],"parameters":["pixel"]},"admin.tracking-pixels.update":{"uri":"admin\/tracking-pixels\/{pixel}","methods":["PUT"],"parameters":["pixel"]},"admin.tracking-pixels.destroy":{"uri":"admin\/tracking-pixels\/{pixel}","methods":["DELETE"],"parameters":["pixel"]},"admin.tracking-pixels.test":{"uri":"admin\/tracking-pixels\/{pixel}\/test","methods":["POST"],"parameters":["pixel"]},"admin.seguranca.index":{"uri":"admin\/seguranca","methods":["GET","HEAD"]},"admin.seguranca.generate":{"uri":"admin\/seguranca\/gerar","methods":["POST"]},"admin.affiliate-chests.index":{"uri":"admin\/affiliate-chests","methods":["GET","HEAD"]},"admin.affiliate-chests.create":{"uri":"admin\/affiliate-chests\/create","methods":["GET","HEAD"]},"admin.affiliate-chests.store":{"uri":"admin\/affiliate-chests","methods":["POST"]},"admin.affiliate-chests.show":{"uri":"admin\/affiliate-chests\/{affiliateChest}","methods":["GET","HEAD"],"parameters":["affiliateChest"],"bindings":{"affiliateChest":"id"}},"admin.affiliate-chests.edit":{"uri":"admin\/affiliate-chests\/{affiliateChest}\/edit","methods":["GET","HEAD"],"parameters":["affiliateChest"],"bindings":{"affiliateChest":"id"}},"admin.affiliate-chests.update":{"uri":"admin\/affiliate-chests\/{affiliateChest}","methods":["PUT"],"parameters":["affiliateChest"],"bindings":{"affiliateChest":"id"}},"admin.affiliate-chests.destroy":{"uri":"admin\/affiliate-chests\/{affiliateChest}","methods":["DELETE"],"parameters":["affiliateChest"],"bindings":{"affiliateChest":"id"}},"admin.affiliate-chests.settings.update":{"uri":"admin\/affiliate-chests\/settings","methods":["POST"]},"admin.affiliate-chests.seed-default":{"uri":"admin\/affiliate-chests\/seed-default","methods":["POST"]},"admin.ferramentas.index":{"uri":"admin\/ferramentas","methods":["GET","HEAD"]},"admin.ferramentas.exportar-usuarios":{"uri":"admin\/ferramentas\/exportar-usuarios","methods":["GET","HEAD"]},"gerente.dashboard":{"uri":"gerente\/dashboard","methods":["GET","HEAD"]},"gerente.networking.index":{"uri":"gerente\/networking","methods":["GET","HEAD"]},"gerente.networking.show":{"uri":"gerente\/networking\/{user}","methods":["GET","HEAD"],"parameters":["user"],"bindings":{"user":"id"}},"gerente.networking.transform-affiliate":{"uri":"gerente\/networking\/{user}\/transform-affiliate","methods":["POST"],"parameters":["user"],"bindings":{"user":"id"}},"gerente.networking.update-balance":{"uri":"gerente\/networking\/{user}\/update-balance","methods":["POST"],"parameters":["user"],"bindings":{"user":"id"}},"pwa.manifest":{"uri":"manifest.json","methods":["GET","HEAD"]},"profile.edit":{"uri":"settings\/profile","methods":["GET","HEAD"]},"profile.update":{"uri":"settings\/profile","methods":["PATCH"]},"profile.destroy":{"uri":"settings\/profile","methods":["DELETE"]},"password.edit":{"uri":"settings\/password","methods":["GET","HEAD"]},"password.update":{"uri":"settings\/password","methods":["PUT"]},"appearance":{"uri":"settings\/appearance","methods":["GET","HEAD"]},"register":{"uri":"register","methods":["GET","HEAD"]},"login":{"uri":"login","methods":["GET","HEAD"]},"password.request":{"uri":"forgot-password","methods":["GET","HEAD"]},"password.email":{"uri":"forgot-password","methods":["POST"]},"password.reset":{"uri":"reset-password\/{token}","methods":["GET","HEAD"],"parameters":["token"]},"password.store":{"uri":"reset-password","methods":["POST"]},"verification.notice":{"uri":"verify-email","methods":["GET","HEAD"]},"verification.verify":{"uri":"verify-email\/{id}\/{hash}","methods":["GET","HEAD"],"parameters":["id","hash"]},"verification.send":{"uri":"email\/verification-notification","methods":["POST"]},"password.confirm":{"uri":"confirm-password","methods":["GET","HEAD"]},"logout":{"uri":"logout","methods":["POST"]},"storage.local":{"uri":"storage\/{path}","methods":["GET","HEAD"],"wheres":{"path":".*"},"parameters":["path"]}}};!function(t,r){"object"==typeof exports&&"undefined"!=typeof module?module.exports=r():"function"==typeof define&&define.amd?define(r):(t||self).route=r()}(this,function(){function t(t,r){for(var n=0;n<r.length;n++){var e=r[n];e.enumerable=e.enumerable||!1,e.configurable=!0,"value"in e&&(e.writable=!0),Object.defineProperty(t,u(e.key),e)}}function r(r,n,e){return n&&t(r.prototype,n),e&&t(r,e),Object.defineProperty(r,"prototype",{writable:!1}),r}function n(){return n=Object.assign?Object.assign.bind():function(t){for(var r=1;r<arguments.length;r++){var n=arguments[r];for(var e in n)({}).hasOwnProperty.call(n,e)&&(t[e]=n[e])}return t},n.apply(null,arguments)}function e(t){return e=Object.setPrototypeOf?Object.getPrototypeOf.bind():function(t){return t.__proto__||Object.getPrototypeOf(t)},e(t)}function o(){try{var t=!Boolean.prototype.valueOf.call(Reflect.construct(Boolean,[],function(){}))}catch(t){}return(o=function(){return!!t})()}function i(t,r){return i=Object.setPrototypeOf?Object.setPrototypeOf.bind():function(t,r){return t.__proto__=r,t},i(t,r)}function u(t){var r=function(t){if("object"!=typeof t||!t)return t;var r=t[Symbol.toPrimitive];if(void 0!==r){var n=r.call(t,"string");if("object"!=typeof n)return n;throw new TypeError("@@toPrimitive must return a primitive value.")}return String(t)}(t);return"symbol"==typeof r?r:r+""}function f(t){var r="function"==typeof Map?new Map:void 0;return f=function(t){if(null===t||!function(t){try{return-1!==Function.toString.call(t).indexOf("[native code]")}catch(r){return"function"==typeof t}}(t))return t;if("function"!=typeof t)throw new TypeError("Super expression must either be null or a function");if(void 0!==r){if(r.has(t))return r.get(t);r.set(t,n)}function n(){return function(t,r,n){if(o())return Reflect.construct.apply(null,arguments);var e=[null];e.push.apply(e,r);var u=new(t.bind.apply(t,e));return n&&i(u,n.prototype),u}(t,arguments,e(this).constructor)}return n.prototype=Object.create(t.prototype,{constructor:{value:n,enumerable:!1,writable:!0,configurable:!0}}),i(n,t)},f(t)}var a=String.prototype.replace,c=/%20/g,l="RFC3986",s={default:l,formatters:{RFC1738:function(t){return a.call(t,c,"+")},RFC3986:function(t){return String(t)}},RFC1738:"RFC1738",RFC3986:l},v=Object.prototype.hasOwnProperty,p=Array.isArray,y=function(){for(var t=[],r=0;r<256;++r)t.push("%"+((r<16?"0":"")+r.toString(16)).toUpperCase());return t}(),d=function(t,r){for(var n=r&&r.plainObjects?Object.create(null):{},e=0;e<t.length;++e)void 0!==t[e]&&(n[e]=t[e]);return n},b={arrayToObject:d,assign:function(t,r){return Object.keys(r).reduce(function(t,n){return t[n]=r[n],t},t)},combine:function(t,r){return[].concat(t,r)},compact:function(t){for(var r=[{obj:{o:t},prop:"o"}],n=[],e=0;e<r.length;++e)for(var o=r[e],i=o.obj[o.prop],u=Object.keys(i),f=0;f<u.length;++f){var a=u[f],c=i[a];"object"==typeof c&&null!==c&&-1===n.indexOf(c)&&(r.push({obj:i,prop:a}),n.push(c))}return function(t){for(;t.length>1;){var r=t.pop(),n=r.obj[r.prop];if(p(n)){for(var e=[],o=0;o<n.length;++o)void 0!==n[o]&&e.push(n[o]);r.obj[r.prop]=e}}}(r),t},decode:function(t,r,n){var e=t.replace(/\+/g," ");if("iso-8859-1"===n)return e.replace(/%[0-9a-f]{2}/gi,unescape);try{return decodeURIComponent(e)}catch(t){return e}},encode:function(t,r,n,e,o){if(0===t.length)return t;var i=t;if("symbol"==typeof t?i=Symbol.prototype.toString.call(t):"string"!=typeof t&&(i=String(t)),"iso-8859-1"===n)return escape(i).replace(/%u[0-9a-f]{4}/gi,function(t){return"%26%23"+parseInt(t.slice(2),16)+"%3B"});for(var u="",f=0;f<i.length;++f){var a=i.charCodeAt(f);45===a||46===a||95===a||126===a||a>=48&&a<=57||a>=65&&a<=90||a>=97&&a<=122||o===s.RFC1738&&(40===a||41===a)?u+=i.charAt(f):a<128?u+=y[a]:a<2048?u+=y[192|a>>6]+y[128|63&a]:a<55296||a>=57344?u+=y[224|a>>12]+y[128|a>>6&63]+y[128|63&a]:(a=65536+((1023&a)<<10|1023&i.charCodeAt(f+=1)),u+=y[240|a>>18]+y[128|a>>12&63]+y[128|a>>6&63]+y[128|63&a])}return u},isBuffer:function(t){return!(!t||"object"!=typeof t||!(t.constructor&&t.constructor.isBuffer&&t.constructor.isBuffer(t)))},isRegExp:function(t){return"[object RegExp]"===Object.prototype.toString.call(t)},maybeMap:function(t,r){if(p(t)){for(var n=[],e=0;e<t.length;e+=1)n.push(r(t[e]));return n}return r(t)},merge:function t(r,n,e){if(!n)return r;if("object"!=typeof n){if(p(r))r.push(n);else{if(!r||"object"!=typeof r)return[r,n];(e&&(e.plainObjects||e.allowPrototypes)||!v.call(Object.prototype,n))&&(r[n]=!0)}return r}if(!r||"object"!=typeof r)return[r].concat(n);var o=r;return p(r)&&!p(n)&&(o=d(r,e)),p(r)&&p(n)?(n.forEach(function(n,o){if(v.call(r,o)){var i=r[o];i&&"object"==typeof i&&n&&"object"==typeof n?r[o]=t(i,n,e):r.push(n)}else r[o]=n}),r):Object.keys(n).reduce(function(r,o){var i=n[o];return r[o]=v.call(r,o)?t(r[o],i,e):i,r},o)}},h=Object.prototype.hasOwnProperty,g={brackets:function(t){return t+"[]"},comma:"comma",indices:function(t,r){return t+"["+r+"]"},repeat:function(t){return t}},m=Array.isArray,j=String.prototype.split,w=Array.prototype.push,O=function(t,r){w.apply(t,m(r)?r:[r])},E=Date.prototype.toISOString,R=s.default,S={addQueryPrefix:!1,allowDots:!1,charset:"utf-8",charsetSentinel:!1,delimiter:"&",encode:!0,encoder:b.encode,encodeValuesOnly:!1,format:R,formatter:s.formatters[R],indices:!1,serializeDate:function(t){return E.call(t)},skipNulls:!1,strictNullHandling:!1},k=function t(r,n,e,o,i,u,f,a,c,l,s,v,p,y){var d,h=r;if("function"==typeof f?h=f(n,h):h instanceof Date?h=l(h):"comma"===e&&m(h)&&(h=b.maybeMap(h,function(t){return t instanceof Date?l(t):t})),null===h){if(o)return u&&!p?u(n,S.encoder,y,"key",s):n;h=""}if("string"==typeof(d=h)||"number"==typeof d||"boolean"==typeof d||"symbol"==typeof d||"bigint"==typeof d||b.isBuffer(h)){if(u){var g=p?n:u(n,S.encoder,y,"key",s);if("comma"===e&&p){for(var w=j.call(String(h),","),E="",R=0;R<w.length;++R)E+=(0===R?"":",")+v(u(w[R],S.encoder,y,"value",s));return[v(g)+"="+E]}return[v(g)+"="+v(u(h,S.encoder,y,"value",s))]}return[v(n)+"="+v(String(h))]}var k,T=[];if(void 0===h)return T;if("comma"===e&&m(h))k=[{value:h.length>0?h.join(",")||null:void 0}];else if(m(f))k=f;else{var $=Object.keys(h);k=a?$.sort(a):$}for(var x=0;x<k.length;++x){var N=k[x],C="object"==typeof N&&void 0!==N.value?N.value:h[N];if(!i||null!==C){var A=m(h)?"function"==typeof e?e(n,N):n:n+(c?"."+N:"["+N+"]");O(T,t(C,A,e,o,i,u,f,a,c,l,s,v,p,y))}}return T},T=Object.prototype.hasOwnProperty,$=Array.isArray,x={allowDots:!1,allowPrototypes:!1,arrayLimit:20,charset:"utf-8",charsetSentinel:!1,comma:!1,decoder:b.decode,delimiter:"&",depth:5,ignoreQueryPrefix:!1,interpretNumericEntities:!1,parameterLimit:1e3,parseArrays:!0,plainObjects:!1,strictNullHandling:!1},N=function(t){return t.replace(/&#(\d+);/g,function(t,r){return String.fromCharCode(parseInt(r,10))})},C=function(t,r){return t&&"string"==typeof t&&r.comma&&t.indexOf(",")>-1?t.split(","):t},A=function(t,r,n,e){if(t){var o=n.allowDots?t.replace(/\.([^.[]+)/g,"[$1]"):t,i=/(\[[^[\]]*])/g,u=n.depth>0&&/(\[[^[\]]*])/.exec(o),f=u?o.slice(0,u.index):o,a=[];if(f){if(!n.plainObjects&&T.call(Object.prototype,f)&&!n.allowPrototypes)return;a.push(f)}for(var c=0;n.depth>0&&null!==(u=i.exec(o))&&c<n.depth;){if(c+=1,!n.plainObjects&&T.call(Object.prototype,u[1].slice(1,-1))&&!n.allowPrototypes)return;a.push(u[1])}return u&&a.push("["+o.slice(u.index)+"]"),function(t,r,n,e){for(var o=e?r:C(r,n),i=t.length-1;i>=0;--i){var u,f=t[i];if("[]"===f&&n.parseArrays)u=[].concat(o);else{u=n.plainObjects?Object.create(null):{};var a="["===f.charAt(0)&&"]"===f.charAt(f.length-1)?f.slice(1,-1):f,c=parseInt(a,10);n.parseArrays||""!==a?!isNaN(c)&&f!==a&&String(c)===a&&c>=0&&n.parseArrays&&c<=n.arrayLimit?(u=[])[c]=o:"__proto__"!==a&&(u[a]=o):u={0:o}}o=u}return o}(a,r,n,e)}},D=function(t,r){var n=function(t){if(!t)return x;if(null!=t.decoder&&"function"!=typeof t.decoder)throw new TypeError("Decoder has to be a function.");if(void 0!==t.charset&&"utf-8"!==t.charset&&"iso-8859-1"!==t.charset)throw new TypeError("The charset option must be either utf-8, iso-8859-1, or undefined");return{allowDots:void 0===t.allowDots?x.allowDots:!!t.allowDots,allowPrototypes:"boolean"==typeof t.allowPrototypes?t.allowPrototypes:x.allowPrototypes,arrayLimit:"number"==typeof t.arrayLimit?t.arrayLimit:x.arrayLimit,charset:void 0===t.charset?x.charset:t.charset,charsetSentinel:"boolean"==typeof t.charsetSentinel?t.charsetSentinel:x.charsetSentinel,comma:"boolean"==typeof t.comma?t.comma:x.comma,decoder:"function"==typeof t.decoder?t.decoder:x.decoder,delimiter:"string"==typeof t.delimiter||b.isRegExp(t.delimiter)?t.delimiter:x.delimiter,depth:"number"==typeof t.depth||!1===t.depth?+t.depth:x.depth,ignoreQueryPrefix:!0===t.ignoreQueryPrefix,interpretNumericEntities:"boolean"==typeof t.interpretNumericEntities?t.interpretNumericEntities:x.interpretNumericEntities,parameterLimit:"number"==typeof t.parameterLimit?t.parameterLimit:x.parameterLimit,parseArrays:!1!==t.parseArrays,plainObjects:"boolean"==typeof t.plainObjects?t.plainObjects:x.plainObjects,strictNullHandling:"boolean"==typeof t.strictNullHandling?t.strictNullHandling:x.strictNullHandling}}(r);if(""===t||null==t)return n.plainObjects?Object.create(null):{};for(var e="string"==typeof t?function(t,r){var n,e={},o=(r.ignoreQueryPrefix?t.replace(/^\?/,""):t).split(r.delimiter,Infinity===r.parameterLimit?void 0:r.parameterLimit),i=-1,u=r.charset;if(r.charsetSentinel)for(n=0;n<o.length;++n)0===o[n].indexOf("utf8=")&&("utf8=%E2%9C%93"===o[n]?u="utf-8":"utf8=%26%2310003%3B"===o[n]&&(u="iso-8859-1"),i=n,n=o.length);for(n=0;n<o.length;++n)if(n!==i){var f,a,c=o[n],l=c.indexOf("]="),s=-1===l?c.indexOf("="):l+1;-1===s?(f=r.decoder(c,x.decoder,u,"key"),a=r.strictNullHandling?null:""):(f=r.decoder(c.slice(0,s),x.decoder,u,"key"),a=b.maybeMap(C(c.slice(s+1),r),function(t){return r.decoder(t,x.decoder,u,"value")})),a&&r.interpretNumericEntities&&"iso-8859-1"===u&&(a=N(a)),c.indexOf("[]=")>-1&&(a=$(a)?[a]:a),e[f]=T.call(e,f)?b.combine(e[f],a):a}return e}(t,n):t,o=n.plainObjects?Object.create(null):{},i=Object.keys(e),u=0;u<i.length;++u){var f=i[u],a=A(f,e[f],n,"string"==typeof t);o=b.merge(o,a,n)}return b.compact(o)},P=/*#__PURE__*/function(){function t(t,r,n){var e,o;this.name=t,this.definition=r,this.bindings=null!=(e=r.bindings)?e:{},this.wheres=null!=(o=r.wheres)?o:{},this.config=n}var n=t.prototype;return n.matchesUrl=function(t){var r,n=this;if(!this.definition.methods.includes("GET"))return!1;var e=this.template.replace(/[.*+$()[\]]/g,"\\$&").replace(/(\/?){([^}?]*)(\??)}/g,function(t,r,e,o){var i,u="(?<"+e+">"+((null==(i=n.wheres[e])?void 0:i.replace(/(^\^)|(\$$)/g,""))||"[^/?]+")+")";return o?"("+r+u+")?":""+r+u}).replace(/^\w+:\/\//,""),o=t.replace(/^\w+:\/\//,"").split("?"),i=o[0],u=o[1],f=null!=(r=new RegExp("^"+e+"/?$").exec(i))?r:new RegExp("^"+e+"/?$").exec(decodeURI(i));if(f){for(var a in f.groups)f.groups[a]="string"==typeof f.groups[a]?decodeURIComponent(f.groups[a]):f.groups[a];return{params:f.groups,query:D(u)}}return!1},n.compile=function(t){var r=this;return this.parameterSegments.length?this.template.replace(/{([^}?]+)(\??)}/g,function(n,e,o){var i,u;if(!o&&[null,void 0].includes(t[e]))throw new Error("Ziggy error: '"+e+"' parameter is required for route '"+r.name+"'.");if(r.wheres[e]&&!new RegExp("^"+(o?"("+r.wheres[e]+")?":r.wheres[e])+"$").test(null!=(u=t[e])?u:""))throw new Error("Ziggy error: '"+e+"' parameter '"+t[e]+"' does not match required format '"+r.wheres[e]+"' for route '"+r.name+"'.");return encodeURI(null!=(i=t[e])?i:"").replace(/%7C/g,"|").replace(/%25/g,"%").replace(/\$/g,"%24")}).replace(this.config.absolute?/(\.[^/]+?)(\/\/)/:/(^)(\/\/)/,"$1/").replace(/\/+$/,""):this.template},r(t,[{key:"template",get:function(){var t=(this.origin+"/"+this.definition.uri).replace(/\/+$/,"");return""===t?"/":t}},{key:"origin",get:function(){return this.config.absolute?this.definition.domain?""+this.config.url.match(/^\w+:\/\//)[0]+this.definition.domain+(this.config.port?":"+this.config.port:""):this.config.url:""}},{key:"parameterSegments",get:function(){var t,r;return null!=(t=null==(r=this.template.match(/{[^}?]+\??}/g))?void 0:r.map(function(t){return{name:t.replace(/{|\??}/g,""),required:!/\?}$/.test(t)}}))?t:[]}}])}(),F=/*#__PURE__*/function(t){function e(r,e,o,i){var u;if(void 0===o&&(o=!0),(u=t.call(this)||this).t=null!=i?i:"undefined"!=typeof Ziggy?Ziggy:null==globalThis?void 0:globalThis.Ziggy,u.t=n({},u.t,{absolute:o}),r){if(!u.t.routes[r])throw new Error("Ziggy error: route '"+r+"' is not in the route list.");u.i=new P(r,u.t.routes[r],u.t),u.u=u.l(e)}return u}var o,u;u=t,(o=e).prototype=Object.create(u.prototype),o.prototype.constructor=o,i(o,u);var f=e.prototype;return f.toString=function(){var t=this,r=Object.keys(this.u).filter(function(r){return!t.i.parameterSegments.some(function(t){return t.name===r})}).filter(function(t){return"_query"!==t}).reduce(function(r,e){var o;return n({},r,((o={})[e]=t.u[e],o))},{});return this.i.compile(this.u)+function(t,r){var n,e=t,o=function(t){if(!t)return S;if(null!=t.encoder&&"function"!=typeof t.encoder)throw new TypeError("Encoder has to be a function.");var r=t.charset||S.charset;if(void 0!==t.charset&&"utf-8"!==t.charset&&"iso-8859-1"!==t.charset)throw new TypeError("The charset option must be either utf-8, iso-8859-1, or undefined");var n=s.default;if(void 0!==t.format){if(!h.call(s.formatters,t.format))throw new TypeError("Unknown format option provided.");n=t.format}var e=s.formatters[n],o=S.filter;return("function"==typeof t.filter||m(t.filter))&&(o=t.filter),{addQueryPrefix:"boolean"==typeof t.addQueryPrefix?t.addQueryPrefix:S.addQueryPrefix,allowDots:void 0===t.allowDots?S.allowDots:!!t.allowDots,charset:r,charsetSentinel:"boolean"==typeof t.charsetSentinel?t.charsetSentinel:S.charsetSentinel,delimiter:void 0===t.delimiter?S.delimiter:t.delimiter,encode:"boolean"==typeof t.encode?t.encode:S.encode,encoder:"function"==typeof t.encoder?t.encoder:S.encoder,encodeValuesOnly:"boolean"==typeof t.encodeValuesOnly?t.encodeValuesOnly:S.encodeValuesOnly,filter:o,format:n,formatter:e,serializeDate:"function"==typeof t.serializeDate?t.serializeDate:S.serializeDate,skipNulls:"boolean"==typeof t.skipNulls?t.skipNulls:S.skipNulls,sort:"function"==typeof t.sort?t.sort:null,strictNullHandling:"boolean"==typeof t.strictNullHandling?t.strictNullHandling:S.strictNullHandling}}(r);"function"==typeof o.filter?e=(0,o.filter)("",e):m(o.filter)&&(n=o.filter);var i=[];if("object"!=typeof e||null===e)return"";var u=g[r&&r.arrayFormat in g?r.arrayFormat:r&&"indices"in r?r.indices?"indices":"repeat":"indices"];n||(n=Object.keys(e)),o.sort&&n.sort(o.sort);for(var f=0;f<n.length;++f){var a=n[f];o.skipNulls&&null===e[a]||O(i,k(e[a],a,u,o.strictNullHandling,o.skipNulls,o.encode?o.encoder:null,o.filter,o.sort,o.allowDots,o.serializeDate,o.format,o.formatter,o.encodeValuesOnly,o.charset))}var c=i.join(o.delimiter),l=!0===o.addQueryPrefix?"?":"";return o.charsetSentinel&&(l+="iso-8859-1"===o.charset?"utf8=%26%2310003%3B&":"utf8=%E2%9C%93&"),c.length>0?l+c:""}(n({},r,this.u._query),{addQueryPrefix:!0,arrayFormat:"indices",encodeValuesOnly:!0,skipNulls:!0,encoder:function(t,r){return"boolean"==typeof t?Number(t):r(t)}})},f.v=function(t){var r=this;t?this.t.absolute&&t.startsWith("/")&&(t=this.p().host+t):t=this.h();var e={},o=Object.entries(this.t.routes).find(function(n){return e=new P(n[0],n[1],r.t).matchesUrl(t)})||[void 0,void 0];return n({name:o[0]},e,{route:o[1]})},f.h=function(){var t=this.p(),r=t.pathname,n=t.search;return(this.t.absolute?t.host+r:r.replace(this.t.url.replace(/^\w*:\/\/[^/]+/,""),"").replace(/^\/+/,"/"))+n},f.current=function(t,r){var e=this.v(),o=e.name,i=e.params,u=e.query,f=e.route;if(!t)return o;var a=new RegExp("^"+t.replace(/\./g,"\\.").replace(/\*/g,".*")+"$").test(o);if([null,void 0].includes(r)||!a)return a;var c=new P(o,f,this.t);r=this.l(r,c);var l=n({},i,u);if(Object.values(r).every(function(t){return!t})&&!Object.values(l).some(function(t){return void 0!==t}))return!0;var s=function(t,r){return Object.entries(t).every(function(t){var n=t[0],e=t[1];return Array.isArray(e)&&Array.isArray(r[n])?e.every(function(t){return r[n].includes(t)}):"object"==typeof e&&"object"==typeof r[n]&&null!==e&&null!==r[n]?s(e,r[n]):r[n]==e})};return s(r,l)},f.p=function(){var t,r,n,e,o,i,u="undefined"!=typeof window?window.location:{},f=u.host,a=u.pathname,c=u.search;return{host:null!=(t=null==(r=this.t.location)?void 0:r.host)?t:void 0===f?"":f,pathname:null!=(n=null==(e=this.t.location)?void 0:e.pathname)?n:void 0===a?"":a,search:null!=(o=null==(i=this.t.location)?void 0:i.search)?o:void 0===c?"":c}},f.has=function(t){return this.t.routes.hasOwnProperty(t)},f.l=function(t,r){var e=this;void 0===t&&(t={}),void 0===r&&(r=this.i),null!=t||(t={}),t=["string","number"].includes(typeof t)?[t]:t;var o=r.parameterSegments.filter(function(t){return!e.t.defaults[t.name]});if(Array.isArray(t))t=t.reduce(function(t,r,e){var i,u;return n({},t,o[e]?((i={})[o[e].name]=r,i):"object"==typeof r?r:((u={})[r]="",u))},{});else if(1===o.length&&!t[o[0].name]&&(t.hasOwnProperty(Object.values(r.bindings)[0])||t.hasOwnProperty("id"))){var i;(i={})[o[0].name]=t,t=i}return n({},this.m(r),this.j(t,r))},f.m=function(t){var r=this;return t.parameterSegments.filter(function(t){return r.t.defaults[t.name]}).reduce(function(t,e,o){var i,u=e.name;return n({},t,((i={})[u]=r.t.defaults[u],i))},{})},f.j=function(t,r){var e=r.bindings,o=r.parameterSegments;return Object.entries(t).reduce(function(t,r){var i,u,f=r[0],a=r[1];if(!a||"object"!=typeof a||Array.isArray(a)||!o.some(function(t){return t.name===f}))return n({},t,((u={})[f]=a,u));if(!a.hasOwnProperty(e[f])){if(!a.hasOwnProperty("id"))throw new Error("Ziggy error: object passed as '"+f+"' parameter is missing route model binding key '"+e[f]+"'.");e[f]="id"}return n({},t,((i={})[f]=a[e[f]],i))},{})},f.valueOf=function(){return this.toString()},r(e,[{key:"params",get:function(){var t=this.v();return n({},t.params,t.query)}},{key:"routeParams",get:function(){return this.v().params}},{key:"queryParams",get:function(){return this.v().query}}])}(/*#__PURE__*/f(String));return function(t,r,n,e){var o=new F(t,r,n,e);return t?o.toString():o}});
-</script>                <link rel="preload" as="style" href="https://raspadinhaspremiada.com/build/assets/app-ZeQlGDXT.css" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/app-xuArFh3K.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/dashboard-CkKq5asx.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/app-layout-BOvYIOYF.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/createLucideIcon-Df5hlft4.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/badge-RmbWBWL2.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/card-dKIifNqP.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/embla-carousel-autoplay.esm-CoutaxaR.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/play-Cwj9hTSk.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/app-shell-CJ5Lq7Bq.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/chevron-left-BqsXidea.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/use-initials-CSgR92yE.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/index-BFWbbylw.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/floating-ui.react-dom-DVLWzvta.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/gift-CxoOGWJe.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/user-CjKlBobZ.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/index-C56jSOSB.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/dialog-BIQ--1MP.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/use-mobile-BRPe9Nuo.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/IconBase.esm-CmC1wNP7.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/plus-DM5ueC2r.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/app-logo-icon-Ce57WCnq.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/circle-plus-Bwdmxs1U.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/user-plus-m4Ak0DIY.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/download-tQ-1xU7w.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/eye-CGs7rjzG.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/eye-off-CI8AcD3f.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/trending-up-CkvBN_M8.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/input-ZsOwVksA.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/label-CwakbaZ1.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/checkbox-C7eH2NpH.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/check-DCM0XEpK.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/alert-dialog-B6GLfIDs.js" /><link rel="modulepreload" href="https://raspadinhaspremiada.com/build/assets/arrow-left-Do5kROTY.js" /><link rel="stylesheet" href="https://raspadinhaspremiada.com/build/assets/app-ZeQlGDXT.css" /><script type="module" src="https://raspadinhaspremiada.com/build/assets/app-xuArFh3K.js"></script><script type="module" src="https://raspadinhaspremiada.com/build/assets/dashboard-CkKq5asx.js"></script>                
-                
-            <style id="custom-theme">
-/* Tema personalizado: Tema Padrão */
-.dark {
-  --card: oklch(0.1964 0.0125 270.71) !important;
-  --input: oklch(0.2573 0.0149 264.45) !important;
-  --muted: oklch(0.1964 0.0125 270.71) !important;
-  --accent: oklch(0.1964 0.0125 270.71) !important;
-  --border: oklch(0.2573 0.0149 264.45) !important;
-  --popover: oklch(0.1732 0.0109 268.05) !important;
-  --primary: oklch(0.8500 0.3700 103.00) !important;
-  --sidebar: oklch(0.1964 0.0125 270.71) !important;
-  --secondary: oklch(0.1964 0.0125 270.71) !important;
-  --background: oklch(0.1732 0.0109 268.05) !important;
-  --foreground: oklch(0.9825 0.0038 283.96) !important;
-  --sidebar-accent: oklch(0.2573 0.0149 264.45) !important;
-  --sidebar-border: oklch(0.2573 0.0149 264.45) !important;
-  --card-foreground: oklch(0.9825 0.0038 283.96) !important;
-  --sidebar-primary: oklch(0.9825 0.0038 283.96) !important;
-  --muted-foreground: oklch(0.6607 0.0113 252.11) !important;
-  --accent-foreground: oklch(0.9825 0.0038 283.96) !important;
-  --popover-foreground: oklch(0.9825 0.0038 283.96) !important;
-  --primary-foreground: oklch(0.1078 0.0138 285.82) !important;
-  --sidebar-foreground: oklch(0.9825 0.0038 283.96) !important;
-  --secondary-foreground: oklch(0.9825 0.0038 283.96) !important;
-  --sidebar-accent-foreground: oklch(0.9825 0.0038 283.96) !important;
-  --sidebar-primary-foreground: oklch(0.1078 0.0138 285.82) !important;
-}
+        /* --- ESTILOS DO FOOTER --- */
+        .site-footer { background-color: var(--bg-light-dark); color: var(--text-grey); padding: 50px 0 20px; margin-top: 60px; border-top: 1px solid #333; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 40px; margin-bottom: 40px; }
+        .footer-column h4, .footer-column .footer-logo { font-family: 'Poppins', sans-serif; color: var(--text-light); font-size: 1.3rem; margin-bottom: 20px; }
+        .footer-column .footer-logo { color: var(--primary-gold); }
+        .footer-description { line-height: 1.6; font-size: 0.9rem; }
+        .footer-column ul { list-style: none; }
+        .footer-column ul li { margin-bottom: 12px; }
+        .footer-column ul a { color: var(--text-grey); text-decoration: none; transition: color var(--transition-speed); }
+        .footer-column ul a:hover { color: var(--primary-gold); text-decoration: underline; }
+        .social-links { display: flex; gap: 15px; }
+        .social-links a { color: var(--text-grey); font-size: 1.5rem; transition: color var(--transition-speed), transform var(--transition-speed); }
+        .social-links a:hover { color: var(--primary-gold); transform: translateY(-3px); }
+        .footer-bottom { border-top: 1px solid #333; padding-top: 20px; text-align: center; font-size: 0.85rem; }
+        .footer-bottom .disclaimer { margin-top: 8px; opacity: 0.7; }
 
-:root.dark {
-  --card: oklch(0.1964 0.0125 270.71) !important;
-  --input: oklch(0.2573 0.0149 264.45) !important;
-  --muted: oklch(0.1964 0.0125 270.71) !important;
-  --accent: oklch(0.1964 0.0125 270.71) !important;
-  --border: oklch(0.2573 0.0149 264.45) !important;
-  --popover: oklch(0.1732 0.0109 268.05) !important;
-  --primary: oklch(0.8500 0.3700 103.00) !important;
-  --sidebar: oklch(0.1964 0.0125 270.71) !important;
-  --secondary: oklch(0.1964 0.0125 270.71) !important;
-  --background: oklch(0.1732 0.0109 268.05) !important;
-  --foreground: oklch(0.9825 0.0038 283.96) !important;
-  --sidebar-accent: oklch(0.2573 0.0149 264.45) !important;
-  --sidebar-border: oklch(0.2573 0.0149 264.45) !important;
-  --card-foreground: oklch(0.9825 0.0038 283.96) !important;
-  --sidebar-primary: oklch(0.9825 0.0038 283.96) !important;
-  --muted-foreground: oklch(0.6607 0.0113 252.11) !important;
-  --accent-foreground: oklch(0.9825 0.0038 283.96) !important;
-  --popover-foreground: oklch(0.9825 0.0038 283.96) !important;
-  --primary-foreground: oklch(0.1078 0.0138 285.82) !important;
-  --sidebar-foreground: oklch(0.9825 0.0038 283.96) !important;
-  --secondary-foreground: oklch(0.9825 0.0038 283.96) !important;
-  --sidebar-accent-foreground: oklch(0.9825 0.0038 283.96) !important;
-  --sidebar-primary-foreground: oklch(0.1078 0.0138 285.82) !important;
-}
+        /* --- RESPONSIVIDADE --- */
+        @media (max-width: 768px) {
+            .header-logged-in { flex-wrap: wrap; row-gap: 15px; }
+            .header-logged-in .logo { order: 1; }
+            .header-logged-in .header-right { order: 2; }
+            .header-logged-in .header-center { order: 3; width: 100%; justify-content: center; }
+            .user-profile .user-name-text { display: none; }
 
-html.dark {
-  --card: oklch(0.1964 0.0125 270.71) !important;
-  --input: oklch(0.2573 0.0149 264.45) !important;
-  --muted: oklch(0.1964 0.0125 270.71) !important;
-  --accent: oklch(0.1964 0.0125 270.71) !important;
-  --border: oklch(0.2573 0.0149 264.45) !important;
-  --popover: oklch(0.1732 0.0109 268.05) !important;
-  --primary: oklch(0.8500 0.3700 103.00) !important;
-  --sidebar: oklch(0.1964 0.0125 270.71) !important;
-  --secondary: oklch(0.1964 0.0125 270.71) !important;
-  --background: oklch(0.1732 0.0109 268.05) !important;
-  --foreground: oklch(0.9825 0.0038 283.96) !important;
-  --sidebar-accent: oklch(0.2573 0.0149 264.45) !important;
-  --sidebar-border: oklch(0.2573 0.0149 264.45) !important;
-  --card-foreground: oklch(0.9825 0.0038 283.96) !important;
-  --sidebar-primary: oklch(0.9825 0.0038 283.96) !important;
-  --muted-foreground: oklch(0.6607 0.0113 252.11) !important;
-  --accent-foreground: oklch(0.9825 0.0038 283.96) !important;
-  --popover-foreground: oklch(0.9825 0.0038 283.96) !important;
-  --primary-foreground: oklch(0.1078 0.0138 285.82) !important;
-  --sidebar-foreground: oklch(0.9825 0.0038 283.96) !important;
-  --secondary-foreground: oklch(0.9825 0.0038 283.96) !important;
-  --sidebar-accent-foreground: oklch(0.9825 0.0038 283.96) !important;
-  --sidebar-primary-foreground: oklch(0.1078 0.0138 285.82) !important;
-}
-</style>
+            .footer-grid { grid-template-columns: 1fr; text-align: center; }
+            .footer-column { display: flex; flex-direction: column; align-items: center; }
+            .social-links { justify-content: center; }
+            .live-winners-section { flex-direction: column; gap: 15px; }
+            .winners-scroll-container { padding-left: 0; }
+        }
+    </style>
 </head>
-    <body class="font-sans antialiased">
-        <div id="app" data-page="{&quot;component&quot;:&quot;dashboard&quot;,&quot;props&quot;:{&quot;errors&quot;:{},&quot;categories&quot;:[{&quot;id&quot;:17,&quot;name&quot;:&quot;PIX na Conta&quot;,&quot;icon&quot;:null,&quot;order&quot;:0,&quot;is_active&quot;:true,&quot;icon_url&quot;:null},{&quot;id&quot;:8,&quot;name&quot;:&quot;Eletr\u00f4nico&quot;,&quot;icon&quot;:null,&quot;order&quot;:1,&quot;is_active&quot;:true,&quot;icon_url&quot;:null},{&quot;id&quot;:16,&quot;name&quot;:&quot;Ve\u00edculo&quot;,&quot;icon&quot;:null,&quot;order&quot;:2,&quot;is_active&quot;:true,&quot;icon_url&quot;:null},{&quot;id&quot;:5,&quot;name&quot;:&quot;Cosm\u00e9ticos&quot;,&quot;icon&quot;:null,&quot;order&quot;:3,&quot;is_active&quot;:true,&quot;icon_url&quot;:null},{&quot;id&quot;:15,&quot;name&quot;:&quot;Vestu\u00e1rio&quot;,&quot;icon&quot;:null,&quot;order&quot;:4,&quot;is_active&quot;:true,&quot;icon_url&quot;:null},{&quot;id&quot;:7,&quot;name&quot;:&quot;Eletrodom\u00e9sticos&quot;,&quot;icon&quot;:null,&quot;order&quot;:12,&quot;is_active&quot;:true,&quot;icon_url&quot;:null}],&quot;settings&quot;:{&quot;id&quot;:1,&quot;nome_plataforma&quot;:&quot;Raspou, levou!&quot;,&quot;descricao_plataforma&quot;:&quot;Plataforma de raspadinha online&quot;,&quot;logo_plataforma&quot;:&quot;images\/settings\/logo_1754096008.webp&quot;,&quot;icone_plataforma&quot;:&quot;images\/settings\/icon_1754096008.webp&quot;,&quot;min_deposito&quot;:&quot;10.00&quot;,&quot;max_deposito&quot;:&quot;5000.00&quot;,&quot;min_saque&quot;:&quot;20.00&quot;,&quot;max_saque&quot;:&quot;50000.00&quot;,&quot;saque_automatico&quot;:&quot;200.00&quot;,&quot;frete&quot;:&quot;15.00&quot;,&quot;animacao&quot;:&quot;bau&quot;,&quot;limite_seguranca&quot;:23,&quot;cpa_padrao&quot;:&quot;3.00&quot;,&quot;revshare_padrao&quot;:&quot;0.00&quot;,&quot;baseline_padrao&quot;:&quot;10.00&quot;,&quot;created_at&quot;:&quot;2025-07-08T11:45:18.000000Z&quot;,&quot;updated_at&quot;:&quot;2025-08-07T21:49:11.000000Z&quot;,&quot;prob_ganho_afiliado&quot;:40,&quot;exibir_total_deposito&quot;:true,&quot;exibir_total_saques&quot;:true,&quot;exibir_baseline&quot;:true,&quot;affiliate_chests_enabled&quot;:0,&quot;affiliate_chest_value_per_affiliate&quot;:&quot;0.10&quot;,&quot;chave_seguranca&quot;:&quot;eyJpdiI6Ik9GYWFUMmg1MFlpbXQ0MnR1UzZoeGc9PSIsInZhbHVlIjoiUlY2QVFBcFUzMXVqMi9scGZob1ZsZ3c0K3VtcVBqUTlOY2wzdXdMREtMVT0iLCJtYWMiOiIzNTU3NTE1MjY5YzU3OWE1ZTI1MDI5NTYwZDgxMjA2OWY2YjY4NjdhNzY0ZjkzMGI4N2M2MGRmN2RkYWFjZWVlIiwidGFnIjoiIn0=&quot;,&quot;suporte_url&quot;:null},&quot;name&quot;:&quot;Raspou, levou!&quot;,&quot;quote&quot;:{&quot;message&quot;:&quot;We must ship.&quot;,&quot;author&quot;:&quot;Taylor Otwell&quot;},&quot;auth&quot;:{&quot;user&quot;:null},&quot;ziggy&quot;:{&quot;url&quot;:&quot;https:\/\/raspadinhaspremiada.com&quot;,&quot;port&quot;:null,&quot;defaults&quot;:[],&quot;routes&quot;:{&quot;sanctum.csrf-cookie&quot;:{&quot;uri&quot;:&quot;sanctum\/csrf-cookie&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;dashboard&quot;:{&quot;uri&quot;:&quot;\/&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;affiliate.ref&quot;:{&quot;uri&quot;:&quot;ref\/{slug}&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;slug&quot;]},&quot;affiliate.ref.bonus&quot;:{&quot;uri&quot;:&quot;ref\/{slug}\/{bonusCode}&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;slug&quot;,&quot;bonusCode&quot;]},&quot;terms&quot;:{&quot;uri&quot;:&quot;terms&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;privacy&quot;:{&quot;uri&quot;:&quot;privacy&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;funil-demo.show&quot;:{&quot;uri&quot;:&quot;jogadagratis\/{id}\/ref\/{ref}\/{bonusCode}&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;id&quot;,&quot;ref&quot;,&quot;bonusCode&quot;]},&quot;funil-demo.jogar&quot;:{&quot;uri&quot;:&quot;jogadagratis\/{id}\/ref\/{ref}\/{bonusCode}\/jogar&quot;,&quot;methods&quot;:[&quot;POST&quot;],&quot;parameters&quot;:[&quot;id&quot;,&quot;ref&quot;,&quot;bonusCode&quot;]},&quot;funil-demo.resgatar&quot;:{&quot;uri&quot;:&quot;jogadagratis\/{id}\/ref\/{ref}\/{bonusCode}\/resgatar&quot;,&quot;methods&quot;:[&quot;POST&quot;],&quot;parameters&quot;:[&quot;id&quot;,&quot;ref&quot;,&quot;bonusCode&quot;]},&quot;raspadinha.show&quot;:{&quot;uri&quot;:&quot;raspadinha\/{raspadinha}&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;raspadinha&quot;],&quot;bindings&quot;:{&quot;raspadinha&quot;:&quot;id&quot;}},&quot;raspadinha.comprar&quot;:{&quot;uri&quot;:&quot;raspadinha\/{raspadinha}\/comprar&quot;,&quot;methods&quot;:[&quot;POST&quot;],&quot;parameters&quot;:[&quot;raspadinha&quot;],&quot;bindings&quot;:{&quot;raspadinha&quot;:&quot;id&quot;}},&quot;test.pixel&quot;:{&quot;uri&quot;:&quot;test-pixel&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;deposito.index&quot;:{&quot;uri&quot;:&quot;account\/deposito&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;deposito.store&quot;:{&quot;uri&quot;:&quot;account\/deposito&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;deposito.qrcode&quot;:{&quot;uri&quot;:&quot;account\/deposito\/qrcode&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;deposito.verificar&quot;:{&quot;uri&quot;:&quot;account\/deposito\/verificar&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;deposito.sucesso&quot;:{&quot;uri&quot;:&quot;account\/deposito\/sucesso&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;saque.index&quot;:{&quot;uri&quot;:&quot;account\/saque&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;saque.store&quot;:{&quot;uri&quot;:&quot;account\/saque&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;saque.afiliado.store&quot;:{&quot;uri&quot;:&quot;account\/saque\/afiliado&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;user.document.update&quot;:{&quot;uri&quot;:&quot;account\/document&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;account.carteira&quot;:{&quot;uri&quot;:&quot;account\/carteira&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;account.carrinho&quot;:{&quot;uri&quot;:&quot;account\/carrinho&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;carrinho.converter&quot;:{&quot;uri&quot;:&quot;account\/carrinho\/{item}\/converter&quot;,&quot;methods&quot;:[&quot;POST&quot;],&quot;parameters&quot;:[&quot;item&quot;],&quot;bindings&quot;:{&quot;item&quot;:&quot;id&quot;}},&quot;carrinho.converter-todos&quot;:{&quot;uri&quot;:&quot;account\/carrinho\/converter-todos&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;carrinho.entrega&quot;:{&quot;uri&quot;:&quot;account\/carrinho\/{item}\/entrega&quot;,&quot;methods&quot;:[&quot;POST&quot;],&quot;parameters&quot;:[&quot;item&quot;],&quot;bindings&quot;:{&quot;item&quot;:&quot;id&quot;}},&quot;account.indique&quot;:{&quot;uri&quot;:&quot;account\/indique&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;account.afiliacao&quot;:{&quot;uri&quot;:&quot;account\/afiliacao&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;afiliado.cofres.claim&quot;:{&quot;uri&quot;:&quot;account\/afiliado\/cofres\/claim&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;entregas.index&quot;:{&quot;uri&quot;:&quot;account\/entregas&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;entregas.show&quot;:{&quot;uri&quot;:&quot;account\/entregas\/{entrega}&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;entrega&quot;],&quot;bindings&quot;:{&quot;entrega&quot;:&quot;id&quot;}},&quot;account.bonus&quot;:{&quot;uri&quot;:&quot;account\/bonus&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;bonus.resgatar&quot;:{&quot;uri&quot;:&quot;account\/bonus\/{bonus}\/resgatar&quot;,&quot;methods&quot;:[&quot;POST&quot;],&quot;parameters&quot;:[&quot;bonus&quot;],&quot;bindings&quot;:{&quot;bonus&quot;:&quot;id&quot;}},&quot;admin.dashboard&quot;:{&quot;uri&quot;:&quot;admin\/dashboard&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.depositos.index&quot;:{&quot;uri&quot;:&quot;admin\/depositos&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.depositos.show&quot;:{&quot;uri&quot;:&quot;admin\/depositos\/{deposit}&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;deposit&quot;]},&quot;admin.depositos.approve&quot;:{&quot;uri&quot;:&quot;admin\/depositos\/{deposit}\/aprovar&quot;,&quot;methods&quot;:[&quot;POST&quot;],&quot;parameters&quot;:[&quot;deposit&quot;]},&quot;admin.depositos.cancel&quot;:{&quot;uri&quot;:&quot;admin\/depositos\/{deposit}\/cancelar&quot;,&quot;methods&quot;:[&quot;POST&quot;],&quot;parameters&quot;:[&quot;deposit&quot;]},&quot;admin.saques.index&quot;:{&quot;uri&quot;:&quot;admin\/saques&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.saques.show&quot;:{&quot;uri&quot;:&quot;admin\/saques\/{withdrawal}&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;withdrawal&quot;]},&quot;admin.saques.approve&quot;:{&quot;uri&quot;:&quot;admin\/saques\/{withdrawal}\/aprovar&quot;,&quot;methods&quot;:[&quot;POST&quot;],&quot;parameters&quot;:[&quot;withdrawal&quot;]},&quot;admin.saques.reject&quot;:{&quot;uri&quot;:&quot;admin\/saques\/{withdrawal}\/recusar&quot;,&quot;methods&quot;:[&quot;POST&quot;],&quot;parameters&quot;:[&quot;withdrawal&quot;]},&quot;admin.usuarios.index&quot;:{&quot;uri&quot;:&quot;admin\/usuarios&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.usuarios.create&quot;:{&quot;uri&quot;:&quot;admin\/usuarios\/create&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.usuarios.store&quot;:{&quot;uri&quot;:&quot;admin\/usuarios&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;admin.usuarios.show&quot;:{&quot;uri&quot;:&quot;admin\/usuarios\/{user}&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;user&quot;],&quot;bindings&quot;:{&quot;user&quot;:&quot;id&quot;}},&quot;admin.usuarios.edit&quot;:{&quot;uri&quot;:&quot;admin\/usuarios\/{user}\/edit&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;user&quot;],&quot;bindings&quot;:{&quot;user&quot;:&quot;id&quot;}},&quot;admin.usuarios.update&quot;:{&quot;uri&quot;:&quot;admin\/usuarios\/{user}&quot;,&quot;methods&quot;:[&quot;PUT&quot;],&quot;parameters&quot;:[&quot;user&quot;],&quot;bindings&quot;:{&quot;user&quot;:&quot;id&quot;}},&quot;admin.usuarios.destroy&quot;:{&quot;uri&quot;:&quot;admin\/usuarios\/{user}&quot;,&quot;methods&quot;:[&quot;DELETE&quot;],&quot;parameters&quot;:[&quot;user&quot;],&quot;bindings&quot;:{&quot;user&quot;:&quot;id&quot;}},&quot;admin.afiliados.index&quot;:{&quot;uri&quot;:&quot;admin\/afiliados&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.gerentes.index&quot;:{&quot;uri&quot;:&quot;admin\/gerentes&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.settings.edit&quot;:{&quot;uri&quot;:&quot;admin\/configuracoes&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.settings.update&quot;:{&quot;uri&quot;:&quot;admin\/configuracoes&quot;,&quot;methods&quot;:[&quot;PUT&quot;]},&quot;admin.gateways.index&quot;:{&quot;uri&quot;:&quot;admin\/gateways&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.gateways.update-all&quot;:{&quot;uri&quot;:&quot;admin\/gateways\/update-all&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;admin.gateways.update&quot;:{&quot;uri&quot;:&quot;admin\/gateways\/{gateway}&quot;,&quot;methods&quot;:[&quot;PUT&quot;],&quot;parameters&quot;:[&quot;gateway&quot;],&quot;bindings&quot;:{&quot;gateway&quot;:&quot;id&quot;}},&quot;admin.gateways.toggle-status&quot;:{&quot;uri&quot;:&quot;admin\/gateways\/{gateway}\/toggle-status&quot;,&quot;methods&quot;:[&quot;PUT&quot;],&quot;parameters&quot;:[&quot;gateway&quot;],&quot;bindings&quot;:{&quot;gateway&quot;:&quot;id&quot;}},&quot;admin.categories.index&quot;:{&quot;uri&quot;:&quot;admin\/categories&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.categories.create&quot;:{&quot;uri&quot;:&quot;admin\/categories\/create&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.categories.store&quot;:{&quot;uri&quot;:&quot;admin\/categories&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;admin.categories.show&quot;:{&quot;uri&quot;:&quot;admin\/categories\/{category}&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;category&quot;],&quot;bindings&quot;:{&quot;category&quot;:&quot;id&quot;}},&quot;admin.categories.edit&quot;:{&quot;uri&quot;:&quot;admin\/categories\/{category}\/edit&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;category&quot;],&quot;bindings&quot;:{&quot;category&quot;:&quot;id&quot;}},&quot;admin.categories.update&quot;:{&quot;uri&quot;:&quot;admin\/categories\/{category}&quot;,&quot;methods&quot;:[&quot;PUT&quot;],&quot;parameters&quot;:[&quot;category&quot;],&quot;bindings&quot;:{&quot;category&quot;:&quot;id&quot;}},&quot;admin.categories.destroy&quot;:{&quot;uri&quot;:&quot;admin\/categories\/{category}&quot;,&quot;methods&quot;:[&quot;DELETE&quot;],&quot;parameters&quot;:[&quot;category&quot;],&quot;bindings&quot;:{&quot;category&quot;:&quot;id&quot;}},&quot;admin.categories.toggle-status&quot;:{&quot;uri&quot;:&quot;admin\/categories\/{category}\/toggle-status&quot;,&quot;methods&quot;:[&quot;PUT&quot;],&quot;parameters&quot;:[&quot;category&quot;],&quot;bindings&quot;:{&quot;category&quot;:&quot;id&quot;}},&quot;admin.categories.update-order&quot;:{&quot;uri&quot;:&quot;admin\/categories\/update-order&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;admin.banners.index&quot;:{&quot;uri&quot;:&quot;admin\/banners&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.banners.create&quot;:{&quot;uri&quot;:&quot;admin\/banners\/create&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.banners.store&quot;:{&quot;uri&quot;:&quot;admin\/banners&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;admin.banners.show&quot;:{&quot;uri&quot;:&quot;admin\/banners\/{banner}&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;banner&quot;],&quot;bindings&quot;:{&quot;banner&quot;:&quot;id&quot;}},&quot;admin.banners.edit&quot;:{&quot;uri&quot;:&quot;admin\/banners\/{banner}\/edit&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;banner&quot;],&quot;bindings&quot;:{&quot;banner&quot;:&quot;id&quot;}},&quot;admin.banners.update&quot;:{&quot;uri&quot;:&quot;admin\/banners\/{banner}&quot;,&quot;methods&quot;:[&quot;PUT&quot;],&quot;parameters&quot;:[&quot;banner&quot;],&quot;bindings&quot;:{&quot;banner&quot;:&quot;id&quot;}},&quot;admin.banners.destroy&quot;:{&quot;uri&quot;:&quot;admin\/banners\/{banner}&quot;,&quot;methods&quot;:[&quot;DELETE&quot;],&quot;parameters&quot;:[&quot;banner&quot;],&quot;bindings&quot;:{&quot;banner&quot;:&quot;id&quot;}},&quot;admin.banners.toggle-status&quot;:{&quot;uri&quot;:&quot;admin\/banners\/{banner}\/toggle-status&quot;,&quot;methods&quot;:[&quot;PUT&quot;],&quot;parameters&quot;:[&quot;banner&quot;],&quot;bindings&quot;:{&quot;banner&quot;:&quot;id&quot;}},&quot;admin.banners.update-order&quot;:{&quot;uri&quot;:&quot;admin\/banners\/update-order&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;admin.stories.index&quot;:{&quot;uri&quot;:&quot;admin\/stories&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.stories.create&quot;:{&quot;uri&quot;:&quot;admin\/stories\/create&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.stories.store&quot;:{&quot;uri&quot;:&quot;admin\/stories&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;admin.stories.edit&quot;:{&quot;uri&quot;:&quot;admin\/stories\/{story}\/edit&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;story&quot;],&quot;bindings&quot;:{&quot;story&quot;:&quot;id&quot;}},&quot;admin.stories.update&quot;:{&quot;uri&quot;:&quot;admin\/stories\/{story}&quot;,&quot;methods&quot;:[&quot;PUT&quot;],&quot;parameters&quot;:[&quot;story&quot;],&quot;bindings&quot;:{&quot;story&quot;:&quot;id&quot;}},&quot;admin.stories.destroy&quot;:{&quot;uri&quot;:&quot;admin\/stories\/{story}&quot;,&quot;methods&quot;:[&quot;DELETE&quot;],&quot;parameters&quot;:[&quot;story&quot;],&quot;bindings&quot;:{&quot;story&quot;:&quot;id&quot;}},&quot;admin.stories.update-order&quot;:{&quot;uri&quot;:&quot;admin\/stories\/update-order&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;admin.themes.index&quot;:{&quot;uri&quot;:&quot;admin\/temas&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.themes.store&quot;:{&quot;uri&quot;:&quot;admin\/temas&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;admin.themes.update&quot;:{&quot;uri&quot;:&quot;admin\/temas\/{theme}&quot;,&quot;methods&quot;:[&quot;PUT&quot;],&quot;parameters&quot;:[&quot;theme&quot;],&quot;bindings&quot;:{&quot;theme&quot;:&quot;id&quot;}},&quot;admin.themes.activate&quot;:{&quot;uri&quot;:&quot;admin\/temas\/{theme}\/activate&quot;,&quot;methods&quot;:[&quot;POST&quot;],&quot;parameters&quot;:[&quot;theme&quot;],&quot;bindings&quot;:{&quot;theme&quot;:&quot;id&quot;}},&quot;admin.themes.destroy&quot;:{&quot;uri&quot;:&quot;admin\/temas\/{theme}&quot;,&quot;methods&quot;:[&quot;DELETE&quot;],&quot;parameters&quot;:[&quot;theme&quot;],&quot;bindings&quot;:{&quot;theme&quot;:&quot;id&quot;}},&quot;admin.themes.preview&quot;:{&quot;uri&quot;:&quot;admin\/temas\/{theme}\/preview&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;theme&quot;],&quot;bindings&quot;:{&quot;theme&quot;:&quot;id&quot;}},&quot;admin.raspadinhas.index&quot;:{&quot;uri&quot;:&quot;admin\/raspadinhas&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.raspadinhas.create&quot;:{&quot;uri&quot;:&quot;admin\/raspadinhas\/create&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.raspadinhas.store&quot;:{&quot;uri&quot;:&quot;admin\/raspadinhas&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;admin.raspadinhas.show&quot;:{&quot;uri&quot;:&quot;admin\/raspadinhas\/{raspadinha}&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;raspadinha&quot;],&quot;bindings&quot;:{&quot;raspadinha&quot;:&quot;id&quot;}},&quot;admin.raspadinhas.edit&quot;:{&quot;uri&quot;:&quot;admin\/raspadinhas\/{raspadinha}\/edit&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;raspadinha&quot;],&quot;bindings&quot;:{&quot;raspadinha&quot;:&quot;id&quot;}},&quot;admin.raspadinhas.update&quot;:{&quot;uri&quot;:&quot;admin\/raspadinhas\/{raspadinha}&quot;,&quot;methods&quot;:[&quot;PUT&quot;],&quot;parameters&quot;:[&quot;raspadinha&quot;],&quot;bindings&quot;:{&quot;raspadinha&quot;:&quot;id&quot;}},&quot;admin.raspadinhas.destroy&quot;:{&quot;uri&quot;:&quot;admin\/raspadinhas\/{raspadinha}&quot;,&quot;methods&quot;:[&quot;DELETE&quot;],&quot;parameters&quot;:[&quot;raspadinha&quot;],&quot;bindings&quot;:{&quot;raspadinha&quot;:&quot;id&quot;}},&quot;admin.raspadinhas.toggle-status&quot;:{&quot;uri&quot;:&quot;admin\/raspadinhas\/{raspadinha}\/toggle-status&quot;,&quot;methods&quot;:[&quot;PUT&quot;],&quot;parameters&quot;:[&quot;raspadinha&quot;],&quot;bindings&quot;:{&quot;raspadinha&quot;:&quot;id&quot;}},&quot;admin.raspadinhas.update-order&quot;:{&quot;uri&quot;:&quot;admin\/raspadinhas\/update-order&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;admin.raspadinhas.premiacoes.index&quot;:{&quot;uri&quot;:&quot;admin\/raspadinhas\/{raspadinha}\/premiacoes&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;raspadinha&quot;],&quot;bindings&quot;:{&quot;raspadinha&quot;:&quot;id&quot;}},&quot;admin.raspadinhas.premiacoes.create&quot;:{&quot;uri&quot;:&quot;admin\/raspadinhas\/{raspadinha}\/premiacoes\/create&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;raspadinha&quot;],&quot;bindings&quot;:{&quot;raspadinha&quot;:&quot;id&quot;}},&quot;admin.raspadinhas.premiacoes.store&quot;:{&quot;uri&quot;:&quot;admin\/raspadinhas\/{raspadinha}\/premiacoes&quot;,&quot;methods&quot;:[&quot;POST&quot;],&quot;parameters&quot;:[&quot;raspadinha&quot;],&quot;bindings&quot;:{&quot;raspadinha&quot;:&quot;id&quot;}},&quot;admin.raspadinhas.premiacoes.show&quot;:{&quot;uri&quot;:&quot;admin\/raspadinhas\/{raspadinha}\/premiacoes\/{premiacao}&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;raspadinha&quot;,&quot;premiacao&quot;],&quot;bindings&quot;:{&quot;raspadinha&quot;:&quot;id&quot;,&quot;premiacao&quot;:&quot;id&quot;}},&quot;admin.raspadinhas.premiacoes.edit&quot;:{&quot;uri&quot;:&quot;admin\/raspadinhas\/{raspadinha}\/premiacoes\/{premiacao}\/edit&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;raspadinha&quot;,&quot;premiacao&quot;],&quot;bindings&quot;:{&quot;raspadinha&quot;:&quot;id&quot;,&quot;premiacao&quot;:&quot;id&quot;}},&quot;admin.raspadinhas.premiacoes.update&quot;:{&quot;uri&quot;:&quot;admin\/raspadinhas\/{raspadinha}\/premiacoes\/{premiacao}&quot;,&quot;methods&quot;:[&quot;PUT&quot;],&quot;parameters&quot;:[&quot;raspadinha&quot;,&quot;premiacao&quot;],&quot;bindings&quot;:{&quot;raspadinha&quot;:&quot;id&quot;,&quot;premiacao&quot;:&quot;id&quot;}},&quot;admin.raspadinhas.premiacoes.destroy&quot;:{&quot;uri&quot;:&quot;admin\/raspadinhas\/{raspadinha}\/premiacoes\/{premiacao}&quot;,&quot;methods&quot;:[&quot;DELETE&quot;],&quot;parameters&quot;:[&quot;raspadinha&quot;,&quot;premiacao&quot;],&quot;bindings&quot;:{&quot;raspadinha&quot;:&quot;id&quot;,&quot;premiacao&quot;:&quot;id&quot;}},&quot;admin.entregas.index&quot;:{&quot;uri&quot;:&quot;admin\/entregas&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.entregas.show&quot;:{&quot;uri&quot;:&quot;admin\/entregas\/{entrega}&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;entrega&quot;],&quot;bindings&quot;:{&quot;entrega&quot;:&quot;id&quot;}},&quot;admin.entregas.update&quot;:{&quot;uri&quot;:&quot;admin\/entregas\/{entrega}&quot;,&quot;methods&quot;:[&quot;PUT&quot;],&quot;parameters&quot;:[&quot;entrega&quot;],&quot;bindings&quot;:{&quot;entrega&quot;:&quot;id&quot;}},&quot;admin.entregas.destroy&quot;:{&quot;uri&quot;:&quot;admin\/entregas\/{entrega}&quot;,&quot;methods&quot;:[&quot;DELETE&quot;],&quot;parameters&quot;:[&quot;entrega&quot;],&quot;bindings&quot;:{&quot;entrega&quot;:&quot;id&quot;}},&quot;admin.historico.index&quot;:{&quot;uri&quot;:&quot;admin\/historico&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.historico.show&quot;:{&quot;uri&quot;:&quot;admin\/historico\/{resultado}&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;resultado&quot;],&quot;bindings&quot;:{&quot;resultado&quot;:&quot;id&quot;}},&quot;admin.historico.destroy&quot;:{&quot;uri&quot;:&quot;admin\/historico\/{resultado}&quot;,&quot;methods&quot;:[&quot;DELETE&quot;],&quot;parameters&quot;:[&quot;resultado&quot;],&quot;bindings&quot;:{&quot;resultado&quot;:&quot;id&quot;}},&quot;admin.comissoes.index&quot;:{&quot;uri&quot;:&quot;admin\/comissoes&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.comissoes.show&quot;:{&quot;uri&quot;:&quot;admin\/comissoes\/{commission}&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;commission&quot;]},&quot;admin.bonus.index&quot;:{&quot;uri&quot;:&quot;admin\/bonus&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.bonus.create&quot;:{&quot;uri&quot;:&quot;admin\/bonus\/create&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.bonus.store&quot;:{&quot;uri&quot;:&quot;admin\/bonus&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;admin.bonus.show&quot;:{&quot;uri&quot;:&quot;admin\/bonus\/{bonus}&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;bonus&quot;],&quot;bindings&quot;:{&quot;bonus&quot;:&quot;id&quot;}},&quot;admin.bonus.edit&quot;:{&quot;uri&quot;:&quot;admin\/bonus\/{bonus}\/edit&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;bonus&quot;],&quot;bindings&quot;:{&quot;bonus&quot;:&quot;id&quot;}},&quot;admin.bonus.update&quot;:{&quot;uri&quot;:&quot;admin\/bonus\/{bonus}&quot;,&quot;methods&quot;:[&quot;PUT&quot;],&quot;parameters&quot;:[&quot;bonus&quot;],&quot;bindings&quot;:{&quot;bonus&quot;:&quot;id&quot;}},&quot;admin.bonus.destroy&quot;:{&quot;uri&quot;:&quot;admin\/bonus\/{bonus}&quot;,&quot;methods&quot;:[&quot;DELETE&quot;],&quot;parameters&quot;:[&quot;bonus&quot;],&quot;bindings&quot;:{&quot;bonus&quot;:&quot;id&quot;}},&quot;admin.funil-demo.index&quot;:{&quot;uri&quot;:&quot;admin\/funil-demo&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.funil-demo.create&quot;:{&quot;uri&quot;:&quot;admin\/funil-demo\/create&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.funil-demo.store&quot;:{&quot;uri&quot;:&quot;admin\/funil-demo&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;admin.funil-demo.show&quot;:{&quot;uri&quot;:&quot;admin\/funil-demo\/{funilDemo}&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;funilDemo&quot;],&quot;bindings&quot;:{&quot;funilDemo&quot;:&quot;id&quot;}},&quot;admin.funil-demo.edit&quot;:{&quot;uri&quot;:&quot;admin\/funil-demo\/{funilDemo}\/edit&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;funilDemo&quot;],&quot;bindings&quot;:{&quot;funilDemo&quot;:&quot;id&quot;}},&quot;admin.funil-demo.update&quot;:{&quot;uri&quot;:&quot;admin\/funil-demo\/{funilDemo}&quot;,&quot;methods&quot;:[&quot;PUT&quot;],&quot;parameters&quot;:[&quot;funilDemo&quot;],&quot;bindings&quot;:{&quot;funilDemo&quot;:&quot;id&quot;}},&quot;admin.funil-demo.destroy&quot;:{&quot;uri&quot;:&quot;admin\/funil-demo\/{funilDemo}&quot;,&quot;methods&quot;:[&quot;DELETE&quot;],&quot;parameters&quot;:[&quot;funilDemo&quot;],&quot;bindings&quot;:{&quot;funilDemo&quot;:&quot;id&quot;}},&quot;admin.funil-demo.toggle-status&quot;:{&quot;uri&quot;:&quot;admin\/funil-demo\/{funilDemo}\/toggle-status&quot;,&quot;methods&quot;:[&quot;PUT&quot;],&quot;parameters&quot;:[&quot;funilDemo&quot;],&quot;bindings&quot;:{&quot;funilDemo&quot;:&quot;id&quot;}},&quot;admin.funil-demo.gerar-url&quot;:{&quot;uri&quot;:&quot;admin\/funil-demo\/{funilDemo}\/gerar-url&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;funilDemo&quot;],&quot;bindings&quot;:{&quot;funilDemo&quot;:&quot;id&quot;}},&quot;admin.tracking-pixels.index&quot;:{&quot;uri&quot;:&quot;admin\/tracking-pixels&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.tracking-pixels.create&quot;:{&quot;uri&quot;:&quot;admin\/tracking-pixels\/create&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.tracking-pixels.store&quot;:{&quot;uri&quot;:&quot;admin\/tracking-pixels&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;admin.tracking-pixels.show&quot;:{&quot;uri&quot;:&quot;admin\/tracking-pixels\/{pixel}&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;pixel&quot;]},&quot;admin.tracking-pixels.edit&quot;:{&quot;uri&quot;:&quot;admin\/tracking-pixels\/{pixel}\/edit&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;pixel&quot;]},&quot;admin.tracking-pixels.update&quot;:{&quot;uri&quot;:&quot;admin\/tracking-pixels\/{pixel}&quot;,&quot;methods&quot;:[&quot;PUT&quot;],&quot;parameters&quot;:[&quot;pixel&quot;]},&quot;admin.tracking-pixels.destroy&quot;:{&quot;uri&quot;:&quot;admin\/tracking-pixels\/{pixel}&quot;,&quot;methods&quot;:[&quot;DELETE&quot;],&quot;parameters&quot;:[&quot;pixel&quot;]},&quot;admin.tracking-pixels.test&quot;:{&quot;uri&quot;:&quot;admin\/tracking-pixels\/{pixel}\/test&quot;,&quot;methods&quot;:[&quot;POST&quot;],&quot;parameters&quot;:[&quot;pixel&quot;]},&quot;admin.seguranca.index&quot;:{&quot;uri&quot;:&quot;admin\/seguranca&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.seguranca.generate&quot;:{&quot;uri&quot;:&quot;admin\/seguranca\/gerar&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;admin.affiliate-chests.index&quot;:{&quot;uri&quot;:&quot;admin\/affiliate-chests&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.affiliate-chests.create&quot;:{&quot;uri&quot;:&quot;admin\/affiliate-chests\/create&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.affiliate-chests.store&quot;:{&quot;uri&quot;:&quot;admin\/affiliate-chests&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;admin.affiliate-chests.show&quot;:{&quot;uri&quot;:&quot;admin\/affiliate-chests\/{affiliateChest}&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;affiliateChest&quot;],&quot;bindings&quot;:{&quot;affiliateChest&quot;:&quot;id&quot;}},&quot;admin.affiliate-chests.edit&quot;:{&quot;uri&quot;:&quot;admin\/affiliate-chests\/{affiliateChest}\/edit&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;affiliateChest&quot;],&quot;bindings&quot;:{&quot;affiliateChest&quot;:&quot;id&quot;}},&quot;admin.affiliate-chests.update&quot;:{&quot;uri&quot;:&quot;admin\/affiliate-chests\/{affiliateChest}&quot;,&quot;methods&quot;:[&quot;PUT&quot;],&quot;parameters&quot;:[&quot;affiliateChest&quot;],&quot;bindings&quot;:{&quot;affiliateChest&quot;:&quot;id&quot;}},&quot;admin.affiliate-chests.destroy&quot;:{&quot;uri&quot;:&quot;admin\/affiliate-chests\/{affiliateChest}&quot;,&quot;methods&quot;:[&quot;DELETE&quot;],&quot;parameters&quot;:[&quot;affiliateChest&quot;],&quot;bindings&quot;:{&quot;affiliateChest&quot;:&quot;id&quot;}},&quot;admin.affiliate-chests.settings.update&quot;:{&quot;uri&quot;:&quot;admin\/affiliate-chests\/settings&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;admin.affiliate-chests.seed-default&quot;:{&quot;uri&quot;:&quot;admin\/affiliate-chests\/seed-default&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;admin.ferramentas.index&quot;:{&quot;uri&quot;:&quot;admin\/ferramentas&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;admin.ferramentas.exportar-usuarios&quot;:{&quot;uri&quot;:&quot;admin\/ferramentas\/exportar-usuarios&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;gerente.dashboard&quot;:{&quot;uri&quot;:&quot;gerente\/dashboard&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;gerente.networking.index&quot;:{&quot;uri&quot;:&quot;gerente\/networking&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;gerente.networking.show&quot;:{&quot;uri&quot;:&quot;gerente\/networking\/{user}&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;user&quot;],&quot;bindings&quot;:{&quot;user&quot;:&quot;id&quot;}},&quot;gerente.networking.transform-affiliate&quot;:{&quot;uri&quot;:&quot;gerente\/networking\/{user}\/transform-affiliate&quot;,&quot;methods&quot;:[&quot;POST&quot;],&quot;parameters&quot;:[&quot;user&quot;],&quot;bindings&quot;:{&quot;user&quot;:&quot;id&quot;}},&quot;gerente.networking.update-balance&quot;:{&quot;uri&quot;:&quot;gerente\/networking\/{user}\/update-balance&quot;,&quot;methods&quot;:[&quot;POST&quot;],&quot;parameters&quot;:[&quot;user&quot;],&quot;bindings&quot;:{&quot;user&quot;:&quot;id&quot;}},&quot;pwa.manifest&quot;:{&quot;uri&quot;:&quot;manifest.json&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;profile.edit&quot;:{&quot;uri&quot;:&quot;settings\/profile&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;profile.update&quot;:{&quot;uri&quot;:&quot;settings\/profile&quot;,&quot;methods&quot;:[&quot;PATCH&quot;]},&quot;profile.destroy&quot;:{&quot;uri&quot;:&quot;settings\/profile&quot;,&quot;methods&quot;:[&quot;DELETE&quot;]},&quot;password.edit&quot;:{&quot;uri&quot;:&quot;settings\/password&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;password.update&quot;:{&quot;uri&quot;:&quot;settings\/password&quot;,&quot;methods&quot;:[&quot;PUT&quot;]},&quot;appearance&quot;:{&quot;uri&quot;:&quot;settings\/appearance&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;register&quot;:{&quot;uri&quot;:&quot;register&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;login&quot;:{&quot;uri&quot;:&quot;login&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;password.request&quot;:{&quot;uri&quot;:&quot;forgot-password&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;password.email&quot;:{&quot;uri&quot;:&quot;forgot-password&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;password.reset&quot;:{&quot;uri&quot;:&quot;reset-password\/{token}&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;token&quot;]},&quot;password.store&quot;:{&quot;uri&quot;:&quot;reset-password&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;verification.notice&quot;:{&quot;uri&quot;:&quot;verify-email&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;verification.verify&quot;:{&quot;uri&quot;:&quot;verify-email\/{id}\/{hash}&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;parameters&quot;:[&quot;id&quot;,&quot;hash&quot;]},&quot;verification.send&quot;:{&quot;uri&quot;:&quot;email\/verification-notification&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;password.confirm&quot;:{&quot;uri&quot;:&quot;confirm-password&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;]},&quot;logout&quot;:{&quot;uri&quot;:&quot;logout&quot;,&quot;methods&quot;:[&quot;POST&quot;]},&quot;storage.local&quot;:{&quot;uri&quot;:&quot;storage\/{path}&quot;,&quot;methods&quot;:[&quot;GET&quot;,&quot;HEAD&quot;],&quot;wheres&quot;:{&quot;path&quot;:&quot;.*&quot;},&quot;parameters&quot;:[&quot;path&quot;]}},&quot;location&quot;:&quot;https:\/\/raspadinhaspremiada.com&quot;},&quot;sidebarOpen&quot;:true,&quot;pendingWithdrawals&quot;:0,&quot;banners&quot;:[{&quot;id&quot;:14,&quot;titulo&quot;:&quot;Banner 01&quot;,&quot;imagem&quot;:&quot;images\/banners\/1753526784.webp&quot;,&quot;link&quot;:null,&quot;local&quot;:&quot;home&quot;,&quot;ordem&quot;:0,&quot;ativo&quot;:true,&quot;created_at&quot;:&quot;2025-07-12T00:19:37.000000Z&quot;,&quot;updated_at&quot;:&quot;2025-07-26T10:46:24.000000Z&quot;},{&quot;id&quot;:15,&quot;titulo&quot;:&quot;Banner 02&quot;,&quot;imagem&quot;:&quot;images\/banners\/1753526797.webp&quot;,&quot;link&quot;:null,&quot;local&quot;:&quot;home&quot;,&quot;ordem&quot;:0,&quot;ativo&quot;:true,&quot;created_at&quot;:&quot;2025-07-12T00:19:45.000000Z&quot;,&quot;updated_at&quot;:&quot;2025-07-26T10:46:37.000000Z&quot;},{&quot;id&quot;:16,&quot;titulo&quot;:&quot;Banner 03&quot;,&quot;imagem&quot;:&quot;images\/banners\/1753526809.webp&quot;,&quot;link&quot;:null,&quot;local&quot;:&quot;home&quot;,&quot;ordem&quot;:0,&quot;ativo&quot;:true,&quot;created_at&quot;:&quot;2025-07-12T00:19:51.000000Z&quot;,&quot;updated_at&quot;:&quot;2025-07-26T10:46:49.000000Z&quot;}],&quot;categorias&quot;:[{&quot;id&quot;:17,&quot;name&quot;:&quot;PIX na Conta&quot;,&quot;icon&quot;:null,&quot;order&quot;:0,&quot;is_active&quot;:true,&quot;created_at&quot;:&quot;2025-07-11T21:57:01.000000Z&quot;,&quot;updated_at&quot;:&quot;2025-07-12T01:27:15.000000Z&quot;,&quot;deleted_at&quot;:null,&quot;icon_url&quot;:null},{&quot;id&quot;:8,&quot;name&quot;:&quot;Eletr\u00f4nico&quot;,&quot;icon&quot;:null,&quot;order&quot;:1,&quot;is_active&quot;:true,&quot;created_at&quot;:&quot;2025-07-09T14:24:01.000000Z&quot;,&quot;updated_at&quot;:&quot;2025-07-12T01:18:43.000000Z&quot;,&quot;deleted_at&quot;:null,&quot;icon_url&quot;:null},{&quot;id&quot;:16,&quot;name&quot;:&quot;Ve\u00edculo&quot;,&quot;icon&quot;:null,&quot;order&quot;:2,&quot;is_active&quot;:true,&quot;created_at&quot;:&quot;2025-07-09T14:26:52.000000Z&quot;,&quot;updated_at&quot;:&quot;2025-07-12T01:19:35.000000Z&quot;,&quot;deleted_at&quot;:null,&quot;icon_url&quot;:null},{&quot;id&quot;:5,&quot;name&quot;:&quot;Cosm\u00e9ticos&quot;,&quot;icon&quot;:null,&quot;order&quot;:3,&quot;is_active&quot;:true,&quot;created_at&quot;:&quot;2025-07-09T13:33:19.000000Z&quot;,&quot;updated_at&quot;:&quot;2025-07-11T22:43:06.000000Z&quot;,&quot;deleted_at&quot;:null,&quot;icon_url&quot;:null},{&quot;id&quot;:15,&quot;name&quot;:&quot;Vestu\u00e1rio&quot;,&quot;icon&quot;:null,&quot;order&quot;:4,&quot;is_active&quot;:true,&quot;created_at&quot;:&quot;2025-07-09T14:26:47.000000Z&quot;,&quot;updated_at&quot;:&quot;2025-07-27T00:36:29.000000Z&quot;,&quot;deleted_at&quot;:null,&quot;icon_url&quot;:null},{&quot;id&quot;:7,&quot;name&quot;:&quot;Eletrodom\u00e9sticos&quot;,&quot;icon&quot;:null,&quot;order&quot;:12,&quot;is_active&quot;:true,&quot;created_at&quot;:&quot;2025-07-09T14:23:52.000000Z&quot;,&quot;updated_at&quot;:&quot;2025-07-27T00:36:32.000000Z&quot;,&quot;deleted_at&quot;:null,&quot;icon_url&quot;:null}],&quot;stories&quot;:[{&quot;id&quot;:1,&quot;titulo&quot;:&quot;COLOCOU, DUPLICOU!!!!&quot;,&quot;thumbnail&quot;:&quot;1754015023_thumb_2x.png&quot;,&quot;media&quot;:&quot;1754015023_media_2x.png&quot;,&quot;tipo&quot;:&quot;imagem&quot;,&quot;ordem&quot;:0,&quot;ativo&quot;:true,&quot;descricao&quot;:null,&quot;created_at&quot;:&quot;2025-08-01T02:23:43.000000Z&quot;,&quot;updated_at&quot;:&quot;2025-08-01T02:27:24.000000Z&quot;,&quot;thumbnail_url&quot;:&quot;https:\/\/raspadinhaspremiada.com\/images\/stories\/1754015023_thumb_2x.png&quot;,&quot;media_url&quot;:&quot;https:\/\/raspadinhaspremiada.com\/images\/stories\/1754015023_media_2x.png&quot;,&quot;duracao&quot;:5}],&quot;raspadinhas&quot;:[{&quot;id&quot;:2,&quot;nome&quot;:&quot;PIX na conta&quot;,&quot;descricao&quot;:&quot;Raspe e receba pr\u00eamios em DINHEIRO $$$ at\u00e9 R$2.000 diretamente no seu PIX&quot;,&quot;thumbnail&quot;:&quot;1753553868.png&quot;,&quot;categoria_id&quot;:17,&quot;preco&quot;:&quot;0.50&quot;,&quot;ordem&quot;:0,&quot;status&quot;:true,&quot;maior_premiacao&quot;:&quot;2000.00&quot;,&quot;thumbnail_url&quot;:&quot;https:\/\/raspadinhaspremiada.com\/images\/raspadinhas\/1753553868.png&quot;,&quot;categoria&quot;:{&quot;id&quot;:17,&quot;name&quot;:&quot;PIX na Conta&quot;,&quot;icon&quot;:null,&quot;icon_url&quot;:null},&quot;premiacoes_ativas&quot;:[{&quot;id&quot;:19,&quot;raspadinha_id&quot;:2,&quot;valor&quot;:&quot;2000.00&quot;,&quot;status&quot;:true,&quot;icone_url&quot;:null}]},{&quot;id&quot;:4,&quot;nome&quot;:&quot;Me mimei&quot;,&quot;descricao&quot;:&quot;Shopee, shein, presentinhos... Quer se mimar mas t\u00e1 muito caro? n\u00e3o se preocupe, \u00e9 s\u00f3 dar uma raspadinha!&quot;,&quot;thumbnail&quot;:&quot;1753544578.png&quot;,&quot;categoria_id&quot;:5,&quot;preco&quot;:&quot;5.00&quot;,&quot;ordem&quot;:1,&quot;status&quot;:true,&quot;maior_premiacao&quot;:&quot;1000.00&quot;,&quot;thumbnail_url&quot;:&quot;https:\/\/raspadinhaspremiada.com\/images\/raspadinhas\/1753544578.png&quot;,&quot;categoria&quot;:{&quot;id&quot;:5,&quot;name&quot;:&quot;Cosm\u00e9ticos&quot;,&quot;icon&quot;:null,&quot;icon_url&quot;:null},&quot;premiacoes_ativas&quot;:[{&quot;id&quot;:55,&quot;raspadinha_id&quot;:4,&quot;valor&quot;:&quot;1000.00&quot;,&quot;status&quot;:true,&quot;icone_url&quot;:null}]},{&quot;id&quot;:1,&quot;nome&quot;:&quot;Sonho de Consumo \ud83d\ude0d&quot;,&quot;descricao&quot;:&quot;Eletro, eletr\u00f4nicos e componentes, receba pr\u00eamios exclusivos de alto valor agregado, o sonho do iphone, tv, geladeira, etc... aqui \u00e9 poss\u00edvel, com pr\u00eamios de at\u00e9 R$5.000&quot;,&quot;thumbnail&quot;:&quot;1753545769.png&quot;,&quot;categoria_id&quot;:8,&quot;preco&quot;:&quot;20.00&quot;,&quot;ordem&quot;:2,&quot;status&quot;:true,&quot;maior_premiacao&quot;:&quot;5000.00&quot;,&quot;thumbnail_url&quot;:&quot;https:\/\/raspadinhaspremiada.com\/images\/raspadinhas\/1753545769.png&quot;,&quot;categoria&quot;:{&quot;id&quot;:8,&quot;name&quot;:&quot;Eletr\u00f4nico&quot;,&quot;icon&quot;:null,&quot;icon_url&quot;:null},&quot;premiacoes_ativas&quot;:[{&quot;id&quot;:1,&quot;raspadinha_id&quot;:1,&quot;valor&quot;:&quot;5000.00&quot;,&quot;status&quot;:true,&quot;icone_url&quot;:null}]},{&quot;id&quot;:6,&quot;nome&quot;:&quot;Eletrodomesticos&quot;,&quot;descricao&quot;:&quot;Do zero a casa mobiliada, com raspadinhas&quot;,&quot;thumbnail&quot;:&quot;1753577615.webp&quot;,&quot;categoria_id&quot;:7,&quot;preco&quot;:&quot;15.00&quot;,&quot;ordem&quot;:3,&quot;status&quot;:true,&quot;maior_premiacao&quot;:&quot;4000.00&quot;,&quot;thumbnail_url&quot;:&quot;https:\/\/raspadinhaspremiada.com\/images\/raspadinhas\/1753577615.webp&quot;,&quot;categoria&quot;:{&quot;id&quot;:7,&quot;name&quot;:&quot;Eletrodom\u00e9sticos&quot;,&quot;icon&quot;:null,&quot;icon_url&quot;:null},&quot;premiacoes_ativas&quot;:[{&quot;id&quot;:86,&quot;raspadinha_id&quot;:6,&quot;valor&quot;:&quot;4000.00&quot;,&quot;status&quot;:true,&quot;icone_url&quot;:null}]},{&quot;id&quot;:3,&quot;nome&quot;:&quot;Super Pr\u00eamios&quot;,&quot;descricao&quot;:&quot;Cansado de ficar a p\u00e9? Essa sua chance de sair motorizado, pr\u00eamios de at\u00e9 R$20.000&quot;,&quot;thumbnail&quot;:&quot;1753552190.jpeg&quot;,&quot;categoria_id&quot;:16,&quot;preco&quot;:&quot;50.00&quot;,&quot;ordem&quot;:4,&quot;status&quot;:true,&quot;maior_premiacao&quot;:&quot;20000.00&quot;,&quot;thumbnail_url&quot;:&quot;https:\/\/raspadinhaspremiada.com\/images\/raspadinhas\/1753552190.jpeg&quot;,&quot;categoria&quot;:{&quot;id&quot;:16,&quot;name&quot;:&quot;Ve\u00edculo&quot;,&quot;icon&quot;:null,&quot;icon_url&quot;:null},&quot;premiacoes_ativas&quot;:[{&quot;id&quot;:44,&quot;raspadinha_id&quot;:3,&quot;valor&quot;:&quot;20000.00&quot;,&quot;status&quot;:true,&quot;icone_url&quot;:null}]},{&quot;id&quot;:5,&quot;nome&quot;:&quot;Outfit&quot;,&quot;descricao&quot;:&quot;Para voc\u00ea andar estiloso, com itens de at\u00e9 R$80.000&quot;,&quot;thumbnail&quot;:&quot;1753578130.webp&quot;,&quot;categoria_id&quot;:15,&quot;preco&quot;:&quot;100.00&quot;,&quot;ordem&quot;:4,&quot;status&quot;:true,&quot;maior_premiacao&quot;:&quot;80000.00&quot;,&quot;thumbnail_url&quot;:&quot;https:\/\/raspadinhaspremiada.com\/images\/raspadinhas\/1753578130.webp&quot;,&quot;categoria&quot;:{&quot;id&quot;:15,&quot;name&quot;:&quot;Vestu\u00e1rio&quot;,&quot;icon&quot;:null,&quot;icon_url&quot;:null},&quot;premiacoes_ativas&quot;:[{&quot;id&quot;:73,&quot;raspadinha_id&quot;:5,&quot;valor&quot;:&quot;80000.00&quot;,&quot;status&quot;:true,&quot;icone_url&quot;:null}]}],&quot;categoria_selecionada&quot;:null},&quot;url&quot;:&quot;\/&quot;,&quot;version&quot;:&quot;b0f2b4dad147e584d55f5a314f3d2da4&quot;,&quot;clearHistory&quot;:false,&quot;encryptHistory&quot;:false}"></div>    </body>
+<body class="logged-out">
+
+    <div id="toast-notification"></div>
+
+    <!-- =========== MODAL DE AUTENTICAÇÃO =========== -->
+    <div class="modal-overlay" id="auth-modal">
+        <div class="modal-content">
+            <button class="close-modal" id="close-modal-btn">&times;</button>
+            <div class="modal-logo">RASPADINHA PREMIADA</div>
+            <div class="auth-tabs">
+                <button class="auth-tab-btn" data-form="login">Conecte-se</button>
+                <button class="auth-tab-btn active" data-form="register">Inscrever-se</button>
+            </div>
+
+            <form id="register-form" class="auth-form active">
+                <div id="register-step-1" class="register-step active">
+                    <p class="form-title">Crie sua conta gratuita. Vamos começar?</p>
+                    <div class="input-group"><i class="fas fa-user"></i><input type="text" id="reg-nome" placeholder="Nome completo" required></div>
+                    <div class="input-group"><i class="fas fa-phone"></i><input type="tel" id="reg-tel" placeholder="Telefone" required></div>
+                    <button type="button" id="register-btn-step1" class="submit-btn">Continuar <i class="fas fa-arrow-right"></i></button>
+                    <p class="switch-form-link">Já tem uma conta? <a class="switch-to-login">Conecte-se</a></p>
+                </div>
+                <div id="register-step-2" class="register-step">
+                    <p class="form-title">Ótimo! Agora, crie uma senha segura.</p>
+                    <div class="input-group"><i class="fas fa-lock"></i><input type="password" id="reg-senha" placeholder="Senha" required></div>
+                    <div class="input-group"><i class="fas fa-lock"></i><input type="password" id="reg-senha-rep" placeholder="Repetir Senha" required></div>
+                    <button type="submit" class="submit-btn">Cadastrar e Logar</button>
+                    <p class="switch-form-link" style="margin-top: 15px; text-align: center;"><a id="register-back-btn"><i class="fas fa-arrow-left"></i> Voltar</a></p>
+                </div>
+            </form>
+
+            <form id="login-form" class="auth-form">
+                <p class="form-title">Bem-vindo de volta!</p>
+                <div class="input-group"><i class="fas fa-envelope"></i><input type="email" placeholder="Email ou CPF" required></div>
+                <div class="input-group"><i class="fas fa-lock"></i><input type="password" placeholder="Senha" required></div>
+                <button type="submit" class="submit-btn">Continuar <i class="fas fa-arrow-right"></i></button>
+                <p class="switch-form-link">Não tem uma conta? <a class="switch-to-register">Inscreva-se</a></p>
+            </form>
+        </div>
+    </div>
+    
+    <div id="main-site-container">
+        <!-- =========== CABEÇALHO PARA USUÁRIOS DESLOGADOS =========== -->
+        <header class="main-header container header-logged-out">
+            <div class="logo">PREMIADA</div>
+            <div class="nav-buttons">
+                <button class="btn-register">Cadastrar</button>
+                <button class="btn-login">Entrar</button>
+            </div>
+        </header>
+
+        <!-- =========== CABEÇALHO PARA USUÁRIOS LOGADOS =========== -->
+        <header class="main-header container header-logged-in">
+            <div class="logo nav-link" data-target="dashboard-page" style="cursor: pointer;">PREMIADA</div>
+            <div class="header-center">
+                <div class="wallet">R$ 128,50</div>
+                <button class="btn-deposit"><i class="fas fa-wallet"></i> Depositar</button>
+            </div>
+            <div class="header-right" id="user-profile-icon">
+                <div class="user-profile">
+                    <span class="user-name-text">Gabriel E...</span>
+                    <div class="avatar">GE</div>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="user-dropdown" id="user-dropdown-menu">
+                    <nav class="dropdown-menu">
+                        <a href="#" class="nav-link" data-target="dashboard-page"><i class="fas fa-ticket-alt"></i> Raspadinhas</a>
+                        <a href="#" class="nav-link" data-target="carteira-page"><i class="fas fa-wallet"></i> Minha Carteira</a>
+                        <a href="#" class="nav-link" data-target="bonus-page"><i class="fas fa-star"></i> Meus Bônus</a>
+                        <a href="#" class="nav-link" data-target="entregas-page"><i class="fas fa-truck"></i> Minhas Entregas</a>
+                        <a href="#" class="nav-link" data-target="indique-page"><i class="fas fa-user-friends"></i> Indique e Ganhe</a>
+                        <a href="#" class="nav-link" data-target="configuracoes-page"><i class="fas fa-cog"></i> Configurações</a>
+                        <a href="#" class="logout" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Sair da Conta</a>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <main class="container">
+            <div id="dashboard-page" class="page-container">
+                <section class="carousel-container">
+                    <div class="carousel-track" id="carousel-track">
+                        <div class="carousel-slide"><img src="img/img1.png" alt="Promo Banner 1" loading="eager"></div>
+                        <div class="carousel-slide"><img src="img/img2.png" alt="Promo Banner 2" loading="lazy"></div>
+                        <div class="carousel-slide"><img src="img/img3.png" alt="Promo Banner 3" loading="lazy"></div>
+                    </div>
+                    <div class="carousel-dots"></div>
+                </section>
+
+                <section class="live-winners-section">
+                    <div class="live-tag">
+                        <span class="blinking-dot"></span>AO<br>VIVO
+                    </div>
+                    <div class="winners-scroll-container" id="winners-container"></div>
+                </section>
+                <div class="filter-tabs">
+                    <button class="active">Destaque</button><button>PIX na Conta</button><button>Eletrônico</button><button>Veículo</button><button>Cosméticos</button>
+                </div>
+                <div class="card-grid">
+                    <div class="scratch-card" data-card-id="pix"><div class="card-image" style="background-color:#4a90e2;"><span class="price-tag">R$ 0,50</span></div><div class="card-content"><h4>PIX na conta</h4><p class="prize-info">PRÊMIOS ATÉ R$ 2000,00</p><p class="description">Raspe e receba prêmios em dinheiro direto no seu PIX.</p></div></div>
+                    <div class="scratch-card" data-card-id="cosmetics"><div class="card-image" style="background-color:#c84a8a;"><span class="price-tag">R$ 5,00</span></div><div class="card-content"><h4>Me mimei</h4><p class="prize-info">PRÊMIOS ATÉ R$ 1000,00</p><p class="description">Shopee, Shein, presentinhos... Quer se mimar mas tá muito caro?</p></div></div>
+                    <div class="scratch-card" data-card-id="electronics"><div class="card-image" style="background-color:#555;"><span class="price-tag">R$ 20,00</span></div><div class="card-content"><h4>Sonho de Consumo</h4><p class="prize-info">PRÊMIOS ATÉ R$ 5000,00</p><p class="description">Eletro, eletrônicos e componentes, receba prêmios exclusivos.</p></div></div>
+                    <div class="scratch-card" data-card-id="appliances"><div class="card-image" style="background-color:#999;"><span class="price-tag">R$ 15,00</span></div><div class="card-content"><h4>Eletrodomésticos</h4><p class="prize-info">PRÊMIOS ATÉ R$ 4000,00</p><p class="description">Do zero a casa mobiliada, com raspadinhas premiadas.</p></div></div>
+                </div>
+            </div>
+
+            <!-- (O restante das páginas permanece inalterado) -->
+            <div id="game-page" class="page-container">
+                <div class="game-board">
+                    <div class="locked-overlay" id="game-locked-overlay">
+                        <i class="fas fa-shopping-cart"></i>
+                        <h3>Compre para jogar</h3>
+                        <p>Raspe os 9 quadradinhos, encontre 3 símbolos iguais e ganhe o prêmio!</p>
+                    </div>
+                    <div class="scratch-grid" id="scratch-grid-container"></div>
+                </div>
+                <div class="purchase-bar" id="game-purchase-bar">
+                    <button id="btn-buy-scratchcard"><i class="fas fa-gift"></i> Comprar Raspadinha</button>
+                    <span class="price" id="game-price-tag"></span>
+                </div>
+                <div class="game-info card" id="game-info-card">
+                    <h3 id="game-info-title"></h3>
+                    <p id="game-info-description"></p>
+                    <h4>Conteúdo dessa raspadinha:</h4>
+                    <div id="game-possible-prizes" class="possible-prizes-grid" style="margin-top: 15px;"></div>
+                </div>
+            </div>
+            <div id="deposit-page" class="page-container">
+                <h1 class="page-title">Depositar</h1>
+                <div class="card" id="deposit-form-container">
+                    <div class="form-group"><label for="deposit-amount">Valor do Depósito</label><input type="text" id="deposit-amount" placeholder="R$ 0,00"></div>
+                    <div class="deposit-options-grid">
+                        <button class="btn-set-amount" data-amount="20">R$ 20</button>
+                        <button class="btn-set-amount" data-amount="50">R$ 50</button>
+                        <button class="btn-set-amount" data-amount="100">R$ 100</button>
+                    </div>
+                    <button class="btn-save" id="btn-generate-pix" style="width: 100%;">Gerar PIX</button>
+                </div>
+                <div class="card pix-display" id="pix-display-container" style="display: none; margin-top:20px;">
+                    <h3>PIX QR Code</h3><img src="https://i.imgur.com/gJ4mD2C.png" alt="Exemplo de QR Code PIX"><p>Aponte a câmera do seu celular para o QR Code</p>
+                    <h4 style="margin-top: 20px;">Ou use o PIX Copia e Cola</h4>
+                    <div class="pix-copy-paste">00020126580014br.gov.bcb.pix0136123e4567-e89b-12d3-a456-4266141740005204000053039865802BR5913NOME...6008BRASILIA62070503***6304E7DE</div>
+                </div>
+            </div>
+            <div id="carteira-page" class="page-container">
+                <h1 class="page-title">Minha Carteira</h1>
+                <div class="wallet-summary"><div class="card balance-card"><h3>Saldo Atual</h3><div class="amount">R$ 128,50</div></div><div class="card balance-card"><h3>Ganhos Totais</h3><div class="amount">R$ 750,00</div></div><div class="card balance-card"><h3>Depósitos Totais</h3><div class="amount">R$ 200,00</div></div></div>
+                <h2 style="margin-bottom: 20px;">Histórico de Transações</h2>
+                <div class="card"><table class="transaction-table"><thead><tr><th>Data</th><th>Descrição</th><th>Valor</th><th>Status</th></tr></thead><tbody><tr><td>07/08/2025</td><td>Depósito via PIX</td><td>+ R$ 50,00</td><td><span class="status completed">Concluído</span></td></tr><tr><td>06/08/2025</td><td>Prêmio Raspadinha "Sorte Grande"</td><td>+ R$ 100,00</td><td><span class="status completed">Concluído</span></td></tr><tr><td>05/08/2025</td><td>Saque via PIX</td><td>- R$ 25,00</td><td><span class="status pending">Pendente</span></td></tr></tbody></table></div>
+            </div>
+            <div id="bonus-page" class="page-container"><h1 class="page-title">Meus Bônus</h1><div class="bonus-grid"><div class="card bonus-card"><h4>Bônus de Boas-Vindas</h4><p>Receba 100% do seu primeiro depósito até R$200.</p><button class="btn-activate">Ativar Bônus</button></div><div class="card bonus-card"><h4>5 Raspadinhas Grátis</h4><p>Use este bônus para jogar 5x na raspadinha "Cofrinho da Sorte".</p><button class="btn-activate">Usar Agora</button></div></div></div>
+            <div id="entregas-page" class="page-container">
+                <h1 class="page-title">Minhas Entregas</h1>
+                <div class="card"><div class="delivery-item"><div class="item-image"></div><div class="delivery-details"><h4>Apple iPhone 15 Pro</h4><p>Prêmio da raspadinha "Sonho de Consumo"</p><ul class="delivery-tracker"><li class="tracker-step completed"><div class="step-dot"></div><div class="step-label">Pedido<br>Recebido</div></li><li class="tracker-step completed"><div class="step-dot"></div><div class="step-label">Em<br>Separação</div></li><li class="tracker-step"><div class="step-dot"></div><div class="step-label">Enviado</div></li><li class="tracker-step"><div class="step-dot"></div><div class="step-label">Entregue</div></li></ul></div></div></div>
+            </div>
+            <div id="indique-page" class="page-container"><h1 class="page-title">Indique um Amigo e Ganhe</h1><div class="card referral-card"><h4>Ganhe R$10 por cada amigo que se cadastrar e depositar!</h4><p>Seu amigo também ganha uma raspadinha grátis ao usar o seu código. Compartilhe agora e comece a lucrar.</p><div class="referral-code-wrapper"><div class="referral-code">GABRIEL123</div><button class="btn-copy"><i class="fas fa-copy"></i></button></div><div class="referral-stats"><div class="stat-item"><h3>5</h3><p>Amigos Convidados</p></div><div class="stat-item"><h3>R$ 30,00</h3><p>Ganhos Totais</p></div></div></div></div>
+            <div id="configuracoes-page" class="page-container">
+                <h1 class="page-title">Configurações</h1>
+                <div class="settings-grid"><div class="card settings-form"><h4>Informações do Perfil</h4><div class="form-group"><label for="name">Nome Completo</label><input type="text" id="name" value="Gabriel Eduardo Seba"></div><div class="form-group"><label for="email">Email</label><input type="email" id="email" value="gabriel@email.com" disabled></div><button class="btn-save">Salvar Alterações</button></div><div class="card settings-form"><h4>Alterar Senha</h4><div class="form-group"><label for="current-pw">Senha Atual</label><input type="password" id="current-pw"></div><div class="form-group"><label for="new-pw">Nova Senha</label><input type="password" id="new-pw"></div><button class="btn-save">Alterar Senha</button></div></div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-column">
+                    <h3 class="footer-logo">PREMIADA</h3>
+                    <p class="footer-description">Sua sorte a um clique de distância. Raspe, jogue e ganhe prêmios incríveis todos os dias!</p>
+                </div>
+                <div class="footer-column">
+                    <h4>Navegação</h4>
+                    <ul>
+                        <li><a href="#">Raspadinhas</a></li>
+                        <li><a href="#">Como Funciona</a></li>
+                        <li><a href="#">Depósitos</a></li>
+                        <li><a href="#">Indique e Ganhe</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Suporte</h4>
+                    <ul>
+                        <li><a href="#">Termos de Uso</a></li>
+                        <li><a href="#">Política de Privacidade</a></li>
+                        <li><a href="#">Jogo Responsável</a></li>
+                        <li><a href="#">Contato</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h4>Siga-nos</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-tiktok"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Raspadinha Premiada. Todos os direitos reservados.</p>
+                <p class="disclaimer">Jogo proibido para menores de 18 anos. Jogue com responsabilidade.</p>
+            </div>
+        </div>
+    </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- VARIÁVEIS GLOBAIS E DE ESTADO ---
+    const body = document.body;
+    const mainSiteContainer = document.getElementById('main-site-container');
+    const allNavLinks = document.querySelectorAll('.nav-link');
+    const pageContainers = document.querySelectorAll('.page-container');
+    const userProfileIcon = document.getElementById('user-profile-icon');
+    const userDropdownMenu = document.getElementById('user-dropdown-menu');
+
+    // --- LÓGICA DE NOTIFICAÇÃO (TOAST) ---
+    const toast = document.getElementById('toast-notification');
+    function showToast(message, duration = 3000) {
+        if (!toast) return;
+        toast.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => { toast.classList.remove('show'); }, duration);
+    }
+
+    // --- Lógica de Autenticação e Modal ---
+    const authModal = document.getElementById('auth-modal');
+    const openLoginModalBtn = document.querySelector('.btn-login');
+    const openRegisterModalBtn = document.querySelector('.btn-register');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const authTabBtns = document.querySelectorAll('.auth-tab-btn');
+    const authForms = document.querySelectorAll('.auth-form');
+    const switchToLoginLink = document.querySelector('.switch-to-login');
+    const switchToRegisterLink = document.querySelector('.switch-to-register');
+    const registerForm = document.getElementById('register-form');
+    const loginForm = document.getElementById('login-form');
+    const registerStep1 = document.getElementById('register-step-1');
+    const registerStep2 = document.getElementById('register-step-2');
+    const registerBtnStep1 = document.getElementById('register-btn-step1');
+    const registerBackBtn = document.getElementById('register-back-btn');
+
+    const showModal = (defaultForm = 'register') => {
+        mainSiteContainer.classList.add('blurred');
+        authModal.classList.add('visible');
+        switchAuthTab(defaultForm);
+        if (registerStep2.classList.contains('active')) {
+            registerStep2.classList.remove('active');
+            registerStep1.classList.add('active');
+        }
+    };
+    const hideModal = () => {
+        mainSiteContainer.classList.remove('blurred');
+        authModal.classList.remove('visible');
+    };
+    const switchAuthTab = (formName) => {
+        authTabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.form === formName));
+        authForms.forEach(form => form.classList.toggle('active', form.id === `${formName}-form`));
+        if (formName === 'register') {
+            registerStep2.classList.remove('active');
+            registerStep1.classList.add('active');
+        }
+    };
+    openLoginModalBtn.addEventListener('click', () => showModal('login'));
+    openRegisterModalBtn.addEventListener('click', () => showModal('register'));
+    closeModalBtn.addEventListener('click', hideModal);
+    authTabBtns.forEach(btn => btn.addEventListener('click', () => switchAuthTab(btn.dataset.form)));
+    switchToLoginLink.addEventListener('click', () => switchAuthTab('login'));
+    switchToRegisterLink.addEventListener('click', () => switchAuthTab('register'));
+    registerBtnStep1.addEventListener('click', () => {
+        const nome = document.getElementById('reg-nome').value;
+        const tel = document.getElementById('reg-tel').value;
+        if (nome.trim() && tel.trim()) {
+            registerStep1.classList.remove('active');
+            registerStep2.classList.add('active');
+        } else { showToast('Por favor, preencha todos os campos.'); }
+    });
+    registerBackBtn.addEventListener('click', () => {
+        registerStep2.classList.remove('active');
+        registerStep1.classList.add('active');
+    });
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        hideModal();
+        handleLogin();
+        showToast('Bem-vindo de volta à sua conta.');
+    });
+    registerForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const senha = document.getElementById('reg-senha').value;
+        const senhaRep = document.getElementById('reg-senha-rep').value;
+        if (senha.length < 6) { showToast('A senha deve ter pelo menos 6 caracteres.'); return; }
+        if (senha !== senhaRep) { showToast('As senhas não coincidem. Tente novamente.'); return; }
+        hideModal();
+        handleLogin();
+        showToast('Cadastro realizado com sucesso! Bem-vindo.');
+    });
+
+    // --- LÓGICA DE LOGIN / LOGOUT E NAVEGAÇÃO SPA ---
+    const logoutButton = document.getElementById('logout-btn');
+    const handleLogin = () => { body.classList.remove('logged-out'); body.classList.add('logged-in'); navigateTo('dashboard-page'); };
+    const handleLogout = () => { body.classList.remove('logged-in'); body.classList.add('logged-out'); navigateTo('dashboard-page'); };
+    logoutButton.addEventListener('click', (e) => { e.preventDefault(); handleLogout(); });
+
+    const navigateTo = (targetId) => {
+        if (!targetId) return;
+        pageContainers.forEach(container => container.classList.remove('active'));
+        const targetPage = document.getElementById(targetId);
+        if (targetPage) targetPage.classList.add('active');
+        if(userDropdownMenu) userDropdownMenu.classList.remove('active');
+        window.scrollTo(0, 0);
+    };
+    allNavLinks.forEach(link => link.addEventListener('click', (e) => { e.preventDefault(); const targetId = link.getAttribute('data-target'); navigateTo(targetId); }));
+    userProfileIcon.addEventListener('click', (e) => { e.stopPropagation(); userDropdownMenu.classList.toggle('active'); });
+    window.addEventListener('click', () => { if (userDropdownMenu.classList.contains('active')) userDropdownMenu.classList.remove('active'); });
+
+    // --- INÍCIO DA ALTERAÇÃO: LÓGICA DO CARROSSEL ---
+    const carouselContainer = document.querySelector('.carousel-container');
+    const carouselTrack = document.querySelector('.carousel-track');
+    const slides = document.querySelectorAll('.carousel-slide');
+    const dotsContainer = document.querySelector('.carousel-dots');
+
+    // Função utilitária: se a imagem não carregar, troca por um placeholder neutro
+    function attachImageFallback(img) {
+        if (!img) return;
+        img.addEventListener('error', () => {
+            img.src = 'https://via.placeholder.com/1600x900.png?text=Banner';
+        }, { once: true });
+    }
+
+    if (slides.length > 0) {
+        let currentSlide = 0;
+        let slideInterval;
+
+        // cria dots
+        slides.forEach((slide, i) => {
+            const img = slide.querySelector('img');
+            attachImageFallback(img);
+            const dot = document.createElement('button');
+            dot.classList.add('carousel-dot');
+            if (i === 0) dot.classList.add('active');
+            dot.addEventListener('click', () => {
+                goToSlide(i);
+                stopCarousel();
+                startCarousel();
+            });
+            dotsContainer.appendChild(dot);
+        });
+
+        const dots = document.querySelectorAll('.carousel-dot');
+
+        const goToSlide = (slideIndex) => {
+            if (!carouselTrack) return;
+            carouselTrack.style.transform = `translateX(-${slideIndex * 100}%)`;
+            dots.forEach(dot => dot.classList.remove('active'));
+            if(dots[slideIndex]) dots[slideIndex].classList.add('active');
+            currentSlide = slideIndex;
+            // Altura controlada por CSS (aspect-ratio). Garantimos que o JS não force altura.
+            if (carouselContainer) carouselContainer.style.height = '';
+        };
+        
+        const nextSlide = () => {
+            const newIndex = (currentSlide + 1) % slides.length;
+            goToSlide(newIndex);
+        };
+
+        const startCarousel = () => {
+            stopCarousel();
+            slideInterval = setInterval(nextSlide, 5000);
+        };
+
+        const stopCarousel = () => {
+            clearInterval(slideInterval);
+        };
+
+        if (carouselContainer) {
+            carouselContainer.addEventListener('mouseenter', stopCarousel);
+            carouselContainer.addEventListener('mouseleave', startCarousel);
+        }
+
+        // Suporte a swipe no mobile
+        let touchStartX = 0;
+        let touchDeltaX = 0;
+        const SWIPE_THRESHOLD = 50;
+
+        carouselContainer.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchDeltaX = 0;
+            stopCarousel();
+        }, { passive: true });
+
+        carouselContainer.addEventListener('touchmove', (e) => {
+            touchDeltaX = e.touches[0].clientX - touchStartX;
+        }, { passive: true });
+
+        carouselContainer.addEventListener('touchend', () => {
+            if (Math.abs(touchDeltaX) > SWIPE_THRESHOLD) {
+                if (touchDeltaX < 0) {
+                    nextSlide();
+                } else {
+                    const prevIndex = (currentSlide - 1 + slides.length) % slides.length;
+                    goToSlide(prevIndex);
+                }
+            }
+            startCarousel();
+        });
+
+        // Inicia
+        goToSlide(0);
+        startCarousel();
+    }
+    // --- FIM DA ALTERAÇÃO ---
+
+    // --- LÓGICA DA PÁGINA DE JOGO ---
+    const scratchGridContainer = document.getElementById('scratch-grid-container');
+    const btnBuyScratchcard = document.getElementById('btn-buy-scratchcard');
+    const lockedOverlay = document.getElementById('game-locked-overlay');
+    const allScratchCards = document.querySelectorAll('.scratch-card');
+    const SCRATCH_CARDS_DB = {
+        pix: { title: 'PIX na conta', price: 'R$ 0,50', description: 'Raspe e receba prêmios em DINHEIRO $$$ até R$2.000.', possible_prizes: ['https://i.imgur.com/rLd7gZz.png', 'https://i.imgur.com/gK9x3Yw.png', 'https://i.imgur.com/pT3Fz5J.png', 'https://i.imgur.com/N5Q8V1j.png'], prize_pool: ['https://i.imgur.com/gK9x3Yw.png', 'https://i.imgur.com/gK9x3Yw.png', 'https://i.imgur.com/gK9x3Yw.png', 'https://i.imgur.com/rLd7gZz.png', 'https://i.imgur.com/pT3Fz5J.png', 'https://i.imgur.com/N5Q8V1j.png', 'https://i.imgur.com/vBw9d2H.png', 'https://i.imgur.com/sC4J7kS.png', 'https://i.imgur.com/tYx4F7q.png'] },
+        cosmetics: { title: 'Me Mimei', price: 'R$ 5,00', description: 'Prêmios exclusivos de beleza e cosméticos.', possible_prizes: ['https://i.imgur.com/prize1.png', 'https://i.imgur.com/prize2.png'], prize_pool: ['https://i.imgur.com/prize1.png', 'https://i.imgur.com/prize1.png', 'https://i.imgur.com/prize1.png', 'https://i.imgur.com/prize2.png', 'https://i.imgur.com/prize3.png', 'https://i.imgur.com/prize4.png', 'https://i.imgur.com/prize5.png', 'https://i.imgur.com/prize6.png', 'https://i.imgur.com/prize7.png'] },
+    };
+    allScratchCards.forEach(cardEl => cardEl.addEventListener('click', () => {
+        const cardId = cardEl.dataset.cardId || 'pix';
+        const data = SCRATCH_CARDS_DB[cardId];
+        if (data) {
+            populateGamePage(data);
+            navigateTo('game-page');
+        }
+    }));
+    function populateGamePage(data) {
+        document.getElementById('game-price-tag').textContent = data.price;
+        document.getElementById('game-info-title').textContent = data.title;
+        document.getElementById('game-info-description').textContent = data.description;
+        const prizesContainer = document.getElementById('game-possible-prizes');
+        prizesContainer.innerHTML = data.possible_prizes.map(p => `<img src="${p}" alt="Prêmio">`).join('');
+        btnBuyScratchcard.onclick = () => { lockedOverlay.classList.add('hidden'); initializeScratchGrid(data.prize_pool); };
+        lockedOverlay.classList.remove('hidden');
+        scratchGridContainer.innerHTML = '';
+    }
+    function initializeScratchGrid(prize_pool) {
+        scratchGridContainer.innerHTML = '';
+        const prizeDeck = [...prize_pool].sort(() => Math.random() - 0.5);
+        for (let i = 0; i < 9; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'scratch-cell';
+            const prizeImg = document.createElement('img');
+            prizeImg.className = 'prize-image';
+            prizeImg.src = prizeDeck[i];
+            const canvas = document.createElement('canvas');
+            canvas.className = 'scratch-canvas';
+            cell.append(prizeImg, canvas);
+            scratchGridContainer.append(cell);
+            setupScratchCanvas(canvas);
+        }
+    }
+    function setupScratchCanvas(canvas) {
+        const ctx = canvas.getContext('2d');
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        ctx.fillStyle = '#a9a9a9';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        let isDrawing = false;
+        const scratch = (e) => {
+            if (!isDrawing) return;
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+            const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.beginPath();
+            ctx.arc(x, y, canvas.width * 0.2, 0, 2 * Math.PI);
+            ctx.fill();
+        };
+        canvas.addEventListener('mousedown', (e) => { isDrawing = true; scratch(e); });
+        canvas.addEventListener('mousemove', scratch);
+        canvas.addEventListener('mouseup', () => isDrawing = false);
+        canvas.addEventListener('mouseleave', () => isDrawing = false);
+        canvas.addEventListener('touchstart', (e) => { isDrawing = true; scratch(e); }, { passive: false });
+        canvas.addEventListener('touchmove', scratch, { passive: false });
+        canvas.addEventListener('touchend', () => isDrawing = false);
+    }
+    
+    // --- LÓGICA DA PÁGINA DE DEPÓSITO ---
+    const depositAmountInput = document.getElementById('deposit-amount');
+    const setAmountBtns = document.querySelectorAll('.btn-set-amount');
+    const generatePixBtn = document.getElementById('btn-generate-pix');
+    const depositFormContainer = document.getElementById('deposit-form-container');
+    const pixDisplayContainer = document.getElementById('pix-display-container');
+    const depositNavBtn = document.querySelector('.btn-deposit');
+    if (depositNavBtn) {
+        depositNavBtn.addEventListener('click', (e) => { e.preventDefault(); navigateTo('deposit-page'); depositFormContainer.style.display = 'block'; pixDisplayContainer.style.display = 'none'; });
+    }
+    setAmountBtns.forEach(btn => btn.addEventListener('click', () => { depositAmountInput.value = `R$ ${btn.dataset.amount},00`; }));
+    if (generatePixBtn) {
+        generatePixBtn.addEventListener('click', () => { if (depositAmountInput.value) { depositFormContainer.style.display = 'none'; pixDisplayContainer.style.display = 'block'; } else { showToast('Por favor, insira um valor para depositar.'); } });
+    }
+
+    // --- SIMULAÇÃO DE GANHADORES "AO VIVO" ---
+    const winnersContainer = document.getElementById('winners-container');
+    if (winnersContainer) {
+        const MAX_WINNERS_VISIBLE = 5; const NEW_WINNER_INTERVAL = 4000; const firstNames = ['Carlos', 'Juliana', 'Marcos', 'Fernanda', 'Lucas', 'Beatriz', 'Ricardo', 'Aline', 'Felipe', 'Sandra', 'Vitor', 'Camila']; const lastInitials = ['S.', 'P.', 'M.', 'F.', 'R.', 'L.', 'G.', 'A.']; const prizes = ['PIX de R$50', 'Jaqueta Esportiva', 'Apple Watch', 'Fone Bluetooth', 'Capacete Premium', 'R$100 em Créditos', 'BodySplash WePink', 'Smart TV', 'PIX de R$20', 'Air Fryer'];
+        function createWinnerElement() { const name = `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastInitials[Math.floor(Math.random() * lastInitials.length)]}****`; const prize = prizes[Math.floor(Math.random() * prizes.length)]; const avatarUrl = `https://i.pravatar.cc/50?u=${Math.random()}`; const winnerEl = document.createElement('div'); winnerEl.className = 'winner-card entering'; winnerEl.innerHTML = `<img src="${avatarUrl}" alt="Avatar"><div>${name}<br><strong>${prize}</strong></div>`; return winnerEl; }
+        function runWinnerSimulation() { if (!winnersContainer) return; const newWinner = createWinnerElement(); winnersContainer.appendChild(newWinner); requestAnimationFrame(() => { newWinner.classList.remove('entering'); }); if (winnersContainer.children.length > MAX_WINNERS_VISIBLE) { const oldestWinner = winnersContainer.firstElementChild; if (oldestWinner) { oldestWinner.classList.add('exiting'); setTimeout(() => { oldestWinner.remove(); }, 500); } } }
+        for (let i = 0; i < MAX_WINNERS_VISIBLE; i++) { setTimeout(() => runWinnerSimulation(), i * 500); } setInterval(runWinnerSimulation, NEW_WINNER_INTERVAL);
+    }
+    
+    // --- ESTADO INICIAL ---
+    handleLogout(); 
+    showModal('register');
+});
+</script>
+
+</body>
 </html>
