@@ -39,6 +39,7 @@ export class InitialDataSeeder {
       
       const adminUser = new User({
         name: 'Administrador',
+        phone: '81 9999999999',
         email: 'admin@raspadinhadasorte.com',
         password: hashedPassword,
         role: UserRole.ADMIN

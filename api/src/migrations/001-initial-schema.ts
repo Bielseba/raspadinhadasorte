@@ -31,6 +31,7 @@ export class InitialSchema1700000000000 implements MigrationInterface {
         "name" character varying(255) NOT NULL,
         "email" character varying(255) NOT NULL,
         "password" character varying(255) NOT NULL,
+        "phone" character varying(255),
         "role" "public"."user_role_enum" NOT NULL DEFAULT 'user',
         "isActive" boolean NOT NULL DEFAULT true,
         "createdAt" TIMESTAMP NOT NULL DEFAULT now(),

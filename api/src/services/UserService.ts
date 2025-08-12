@@ -1,6 +1,8 @@
 import { User, UserRole } from '../entities/User';
 import { UserRepository } from '../repositories/UserRepository';
 import * as bcrypt from 'bcryptjs';
+import { WalletRepository } from '../repositories/WalletRepository';
+import { TransactionRepository } from '../repositories/TransactionRepository';
 
 export interface IUserService {
   getAll(): Promise<User[]>;
@@ -11,10 +13,18 @@ export interface IUserService {
   findByEmail(email: string): Promise<User | null>;
   validatePassword(user: User, password: string): Promise<boolean>;
   changePassword(userId: string, newPassword: string): Promise<boolean>;
+  getWalletBalance(userId: string): Promise<number>;
+  updateWalletBalance(userId: string, amount: number): Promise<boolean>;
+  depositToWallet(userId: string, amount: number): Promise<boolean>;
+  getLastTransactions(userId: string, limit?: number): Promise<any[]>;
 }
 
 export class UserService implements IUserService {
-  constructor(private userRepository: UserRepository) {}
+  constructor(
+    private userRepository: UserRepository,
+    private walletRepository: WalletRepository,
+    private transactionRepository: TransactionRepository
+  ) { }
 
   async getAll(): Promise<User[]> {
     return this.userRepository.findAll();
@@ -49,12 +59,15 @@ export class UserService implements IUserService {
 
     const user = new User({
       name: data.name,
+      phone: data.phone,
       email: data.email,
       password: hashedPassword,
       role: data.role || UserRole.USER
     });
 
-    return this.userRepository.create(user);
+    const createdUser = await this.userRepository.create(user);
+    await this.walletRepository.create({ userId: createdUser.id, balance: 0 });
+    return createdUser;
   }
 
   async update(id: string, data: Partial<User>): Promise<User | null> {
@@ -106,8 +119,40 @@ export class UserService implements IUserService {
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     const updated = await this.userRepository.update(userId, { password: hashedPassword });
-    
+
     return updated !== null;
+  }
+
+  async getWalletBalance(userId: string): Promise<number> {
+    const wallet = await this.walletRepository.findByUserId(userId);
+    if (!wallet) throw new Error('Carteira não encontrada');
+    return wallet.balance;
+  }
+
+  async updateWalletBalance(userId: string, amount: number): Promise<boolean> {
+    const wallet = await this.walletRepository.findByUserId(userId);
+    if (!wallet) throw new Error('Carteira não encontrada');
+    return this.walletRepository.update(wallet.id, { balance: amount }) !== null;
+  }
+
+  async depositToWallet(userId: string, amount: number): Promise<boolean> {
+    if (amount <= 0) throw new Error('Valor do depósito inválido');
+    const wallet = await this.walletRepository.findByUserId(userId);
+    if (!wallet) throw new Error('Carteira não encontrada');
+
+    const newBalance = wallet.balance + amount;
+    await this.walletRepository.update(wallet.id, { balance: newBalance });
+    await this.transactionRepository.create({
+      userId,
+      amount,
+      type: 'deposit',
+      date: new Date()
+    });
+    return true;
+  }
+
+  async getLastTransactions(userId: string, limit = 10): Promise<any[]> {
+    return this.transactionRepository.findByUserId(userId, limit);
   }
 
   private isValidEmail(email: string): boolean {

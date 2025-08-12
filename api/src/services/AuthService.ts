@@ -4,7 +4,7 @@ import * as jwt from 'jsonwebtoken';
 
 export interface IAuthService {
   login(email: string, password: string): Promise<{ user: User; token: string }>;
-  register(userData: { name: string; email: string; password: string }): Promise<{ user: User; token: string }>;
+  register(userData: { name: string; phone: string; email: string; password: string }): Promise<{ user: User; token: string }>;
   validateToken(token: string): Promise<User | null>;
   generateToken(user: User): string;
 }
@@ -56,7 +56,6 @@ export class AuthService implements IAuthService {
 
   generateToken(user: User): string {
     const jwtSecret = process.env.JWT_SECRET || 'default_secret';
-    const expiresIn = process.env.JWT_EXPIRES_IN || '7d';
 
     return jwt.sign(
       { 
@@ -65,7 +64,7 @@ export class AuthService implements IAuthService {
         role: user.role
       },
       jwtSecret,
-      { expiresIn }
+      { expiresIn: "7d" }
     );
   }
 } 

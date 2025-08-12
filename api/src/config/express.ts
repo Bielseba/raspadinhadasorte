@@ -5,16 +5,17 @@ import rateLimit from 'express-rate-limit';
 import { errorHandler, notFoundHandler } from '../middlewares/errorMiddleware';
 import { createRoutes } from '../routes/index';
 import { Container } from './container';
+import path from 'path';
 
 export const createApp = (container: Container): Application => {
   const app = express();
 
   // Middlewares de segurança
   app.use(helmet());
-  
+
   // CORS
   app.use(cors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+    origin: process.env.CORS_ORIGIN || ['http://localhost:5500', 'http://127.0.0.1:5500'],
     credentials: true
   }));
 
@@ -37,6 +38,17 @@ export const createApp = (container: Container): Application => {
 
   // Rotas da API
   app.use('/api', createRoutes(container));
+
+  app.get('/', (req, res) => {
+    res.sendFile(path.resolve(__dirname,'..', '..', '..','public', 'index.html'));
+  });
+
+  app.get('/admin', (req, res) => {
+    res.sendFile(path.resolve(__dirname,'..', '..', '..', 'public', 'admin', 'index.html'));
+  });
+
+  app.use(express.static(path.resolve(__dirname, '..', '..', '..','public')));
+  app.use('/admin', express.static(path.resolve(__dirname, '..', '..', '..','public', 'admin')));
 
   // Middlewares de tratamento de erro (devem ser os últimos)
   app.use(notFoundHandler);

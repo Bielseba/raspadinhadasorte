@@ -1,5 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, Index } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, Index, OneToOne } from 'typeorm';
 import { Purchase } from './Purchase';
+import { Wallet } from './Wallet';
+import { Transaction } from './Transaction';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -17,6 +19,9 @@ export class User {
   @Column({ type: 'varchar', length: 255, unique: true })
   @Index()
   email: string;
+
+  @Column({ type: 'varchar', length: 255 })
+  phone: string;
 
   @Column({ type: 'varchar', length: 255 })
   password: string;
@@ -40,14 +45,22 @@ export class User {
   @OneToMany(() => Purchase, purchase => purchase.user)
   purchases: Purchase[];
 
+  @OneToOne(() => Wallet, wallet => wallet.user)
+  wallet: Wallet;
+
+  @OneToMany(() => Transaction, transaction => transaction.user)
+  transactions: Transaction[];
+
   constructor(data?: {
     name: string;
+    phone: string;
     email: string;
     password: string;
     role?: UserRole;
   }) {
     if (data) {
       this.name = data.name;
+      this.phone = data.phone;
       this.email = data.email;
       this.password = data.password;
       this.role = data.role || UserRole.USER;

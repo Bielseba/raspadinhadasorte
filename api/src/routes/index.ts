@@ -10,8 +10,8 @@ export const createRoutes = (container: Container): Router => {
 
   // Rota de health check
   router.get('/health', (req, res) => {
-    res.json({ 
-      status: 'OK', 
+    res.json({
+      status: 'OK',
       timestamp: new Date().toISOString(),
       version: '1.0.0'
     });
@@ -20,7 +20,7 @@ export const createRoutes = (container: Container): Router => {
   // Rotas da aplicação
   router.use('/auth', createAuthRoutes(container.authController));
   router.use('/raspadinhas', createRaspadinhaRoutes(container.raspadinhaController, container.authMiddleware));
-  router.use('/users', createUserRoutes(container.userController, container.authMiddleware));
+  router.use('/users', createUserRoutes(container.userController, container.walletController, container.transactionController, container.authMiddleware));
   router.use('/purchases', createPurchaseRoutes(container.purchaseController, container.authMiddleware));
 
   return router;

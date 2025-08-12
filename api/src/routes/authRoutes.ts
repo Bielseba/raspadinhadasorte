@@ -12,7 +12,7 @@ export const createAuthRoutes = (authController: AuthController): Router => {
   );
 
   router.post('/register', 
-    validateRequest(registerSchema),
+    // validateRequest(registerSchema),
     authController.register.bind(authController)
   );
 

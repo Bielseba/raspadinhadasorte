@@ -2,6 +2,8 @@ import { DataSource } from 'typeorm';
 import { User } from '../entities/User';
 import { Raspadinha } from '../entities/Raspadinha';
 import { Purchase } from '../entities/Purchase';
+import { Transaction } from '../entities/Transaction';
+import { Wallet } from '../entities/Wallet';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -15,7 +17,7 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME || 'raspadinhadasorte',
   synchronize: process.env.NODE_ENV === 'development',
   logging: process.env.NODE_ENV === 'development',
-  entities: [User, Raspadinha, Purchase],
+  entities: [User, Raspadinha, Purchase, Wallet, Transaction],
   migrations: ['src/migrations/*.ts'],
   subscribers: ['src/subscribers/*.ts'],
 });

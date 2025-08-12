@@ -14,11 +14,17 @@ import { PurchaseController } from '../controllers/PurchaseController';
 import { AuthController } from '../controllers/AuthController';
 import { AuthMiddleware } from '../middlewares/authMiddleware';
 import { initializeDatabase } from './database';
+import { WalletRepository } from '../repositories/WalletRepository';
+import { TransactionRepository } from '../repositories/TransactionRepository';
+import { WalletController } from '../controllers/WalletController';
+import { TransactionController } from '../controllers/TransactionController';
 
 export class Container {
   public userRepository: UserRepository;
   public raspadinhaRepository: RaspadinhaRepository;
   public purchaseRepository: PurchaseRepository;
+  public walletRepository: WalletRepository;
+  public transactionRepository: TransactionRepository;
   public userService: UserService;
   public raspadinhaService: RaspadinhaService;
   public purchaseService: PurchaseService;
@@ -26,6 +32,8 @@ export class Container {
   public userController: UserController;
   public raspadinhaController: RaspadinhaController;
   public purchaseController: PurchaseController;
+  public walletController: WalletController;
+  public transactionController: TransactionController;
   public authController: AuthController;
   public authMiddleware: AuthMiddleware;
 
@@ -33,17 +41,19 @@ export class Container {
     this.userRepository = new UserRepository();
     this.raspadinhaRepository = new RaspadinhaRepository();
     this.purchaseRepository = new PurchaseRepository();
-    
-    this.userService = new UserService(this.userRepository);
+
+    this.userService = new UserService(this.userRepository, this.walletRepository, this.transactionRepository);
     this.raspadinhaService = new RaspadinhaService(this.raspadinhaRepository);
-    this.purchaseService = new PurchaseService(this.purchaseRepository, this.raspadinhaRepository, this.userRepository);
-    this.authService = new AuthService(this.userRepository);
-    
+    this.purchaseService = new PurchaseService(this.purchaseRepository, this.raspadinhaService, this.userService);
+    this.authService = new AuthService(this.userService);
+
     this.userController = new UserController(this.userService);
     this.raspadinhaController = new RaspadinhaController(this.raspadinhaService);
     this.purchaseController = new PurchaseController(this.purchaseService);
     this.authController = new AuthController(this.authService);
-    
+    this.walletController = new WalletController(this.walletRepository, this.transactionRepository);
+    this.transactionController = new TransactionController(this.transactionRepository);
+
     this.authMiddleware = new AuthMiddleware(this.authService);
   }
 
