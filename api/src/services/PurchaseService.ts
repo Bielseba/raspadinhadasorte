@@ -111,7 +111,7 @@ export class PurchaseService implements IPurchaseService {
     return this.purchaseRepository.update(purchaseId, {
       isScratched: purchase.isScratched,
       scratchedAt: purchase.scratchedAt,
-      prize: purchase.prize
+      winnings: purchase.winnings
     });
   }
 

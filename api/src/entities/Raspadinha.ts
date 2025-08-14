@@ -27,17 +27,17 @@ export class Raspadinha {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   price!: number;
 
-  @Column({ 
-    type: 'enum', 
-    enum: RaspadinhaType, 
-    default: RaspadinhaType.SILVER 
+  @Column({
+    type: 'enum',
+    enum: RaspadinhaType,
+    default: RaspadinhaType.SILVER
   })
   type!: RaspadinhaType;
 
-  @Column({ 
-    type: 'enum', 
-    enum: RaspadinhaStatus, 
-    default: RaspadinhaStatus.AVAILABLE 
+  @Column({
+    type: 'enum',
+    enum: RaspadinhaStatus,
+    default: RaspadinhaStatus.AVAILABLE
   })
   status!: RaspadinhaStatus;
 
@@ -58,6 +58,9 @@ export class Raspadinha {
 
   @OneToMany(() => Purchase, purchase => purchase.raspadinha)
   purchases!: Purchase[];
+
+  @Column({ type: 'int', default: 0 })
+  availableCards!: number;
 
   constructor(data?: {
     name: string;
@@ -89,4 +92,15 @@ export class Raspadinha {
   public setWinnings(amount: number): void {
     this.currentWinnings = amount;
   }
+
+  public canBePurchased(): boolean {
+    return this.isActive && this.status === RaspadinhaStatus.AVAILABLE && this.availableCards > 0;
+  }
+
+  public decreaseAvailableCards(): void {
+    if (this.availableCards > 0) {
+      this.availableCards -= 1;
+    }
+  }
+
 } 

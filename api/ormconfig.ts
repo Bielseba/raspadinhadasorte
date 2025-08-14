@@ -2,6 +2,8 @@ import { DataSource } from 'typeorm';
 import { User } from './src/entities/User';
 import { Raspadinha } from './src/entities/Raspadinha';
 import { Purchase } from './src/entities/Purchase';
+import { Wallet } from './src/entities/Wallet';
+import { Transaction } from './src/entities/Transaction';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -15,7 +17,7 @@ export default new DataSource({
   database: process.env.DB_NAME || 'raspadinhadasorte',
   synchronize: false,
   logging: process.env.NODE_ENV === 'development',
-  entities: [User, Raspadinha, Purchase],
+  entities: [User, Raspadinha, Purchase, Wallet, Transaction],
   migrations: ['src/migrations/*.ts'],
   subscribers: ['src/subscribers/*.ts'],
 }); 

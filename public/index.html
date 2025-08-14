@@ -13,6 +13,7 @@
         rel="stylesheet">
     <!-- Font Awesome para Ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="css/wallet.css">
     <style>
         :root {
             --bg-dark: #121212;
@@ -441,7 +442,7 @@
             position: relative;
             /* Deixar o CSS controlar a altura por aspecto, para evitar jumps no mobile */
             aspect-ratio: 16 / 9;
-            background: #0f0f0f;
+            /* background: #0f0f0f; */
         }
 
         /* Em telas menores, um banner mais alto favorece o "contain" sem barras minúsculas */
@@ -463,7 +464,7 @@
             flex-shrink: 0;
             height: 100%;
             position: relative;
-            background: #0f0f0f;
+            /* background: #0f0f0f; */
         }
 
         .carousel-slide img {
@@ -1620,158 +1621,7 @@
     </footer>
 
     <!-- Importação dos módulos JS e bootstrap da aplicação -->
-    <script type="module">
-        import { AppController } from './js/controllers/app.controller.js';
-        window.app = new AppController();
-
-        // Toast utilitário
-        const toast = document.getElementById('toast-notification');
-        function showToast(message, duration = 3000) {
-            if (!toast) return;
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => { toast.classList.remove('show'); }, duration);
-        }
-
-        // --- LOGIN ---
-        const loginForm = document.getElementById('login-form');
-        if (loginForm) {
-            loginForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const email = loginForm.querySelector('input[type="email"]').value;
-                const password = loginForm.querySelector('input[type="password"]').value;
-                try {
-                    const success = await window.app.login({ email, password });
-                    if (success) {
-                        hideModal();
-                        showToast('Bem-vindo de volta à sua conta.');
-                    } else {
-                        showToast('Falha no login. Verifique seus dados.');
-                    }
-                } catch (err) {
-                    showToast(err.message || 'Erro ao fazer login.');
-                }
-            });
-        }
-
-        // --- REGISTRO ---
-        const registerForm = document.getElementById('register-form');
-        if (registerForm) {
-            registerForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const email = document.getElementById('reg-email').value;
-                const name = document.getElementById('reg-nome').value;
-                const phone = document.getElementById('reg-tel').value;
-                const senha = document.getElementById('reg-senha').value;
-                const senhaRep = document.getElementById('reg-senha-rep').value;
-                if (senha.length < 6) return showToast('A senha deve ter pelo menos 6 caracteres.');
-                if (senha !== senhaRep) return showToast('As senhas não coincidem. Tente novamente.');
-                try {
-                    const success = await window.app.register({ email, name, phone, password: senha });
-                    if (success) {
-                        hideModal();
-                        showToast('Cadastro realizado com sucesso! Bem-vindo.');
-                    } else {
-                        showToast('Falha no cadastro. Verifique seus dados.');
-                    }
-                } catch (err) {
-                    showToast(err.message || 'Erro ao registrar.');
-                }
-            });
-        }
-
-        // --- LOGOUT ---
-        const logoutButton = document.getElementById('logout-btn');
-        if (logoutButton) {
-            logoutButton.addEventListener('click', async (e) => {
-                e.preventDefault();
-                await window.app.logout();
-                showToast('Você saiu da sua conta.');
-            });
-        }
-
-        // --- COMPRA DE RASPADINHA ---
-        let selectedCardId = null;
-        const allScratchCards = document.querySelectorAll('.scratch-card');
-        allScratchCards.forEach(cardEl => cardEl.addEventListener('click', () => {
-            selectedCardId = cardEl.dataset.cardId;
-            // Aqui você pode chamar window.app.getAvailableRaspadinhas() se quiser atualizar info
-        }));
-        const btnBuyScratchcard = document.getElementById('btn-buy-scratchcard');
-        const lockedOverlay = document.getElementById('game-locked-overlay');
-        if (btnBuyScratchcard) {
-            btnBuyScratchcard.onclick = async () => {
-                if (!selectedCardId) return showToast('Selecione uma raspadinha.');
-                const success = await window.app.purchaseRaspadinha(selectedCardId);
-                if (success) {
-                    lockedOverlay.classList.add('hidden');
-                    showToast('Raspadinha comprada com sucesso!');
-                } else {
-                    showToast('Erro ao comprar raspadinha.');
-                }
-            };
-        }
-
-        // --- RASPAGEM DE CARTELA ---
-        // Exemplo: supondo que você tenha um botão para raspar (adicione o id btn-scratch se necessário)
-        // const btnScratch = document.getElementById('btn-scratch');
-        // if (btnScratch) {
-        //     btnScratch.onclick = async () => {
-        //         const purchaseId = ... // obter id da compra
-        //         const success = await window.app.scratchRaspadinha(purchaseId);
-        //         if (success) {
-        //             showToast('Boa sorte! Veja seu prêmio.');
-        //         } else {
-        //             showToast('Erro ao raspar cartela.');
-        //         }
-        //     };
-        // }
-
-        // --- ATUALIZAÇÃO DE PERFIL ---
-        const btnSaveProfile = document.querySelector('.settings-form .btn-save');
-        if (btnSaveProfile) {
-            btnSaveProfile.onclick = async () => {
-                const name = document.getElementById('name').value;
-                const email = document.getElementById('email').value;
-                // Adapte para pegar telefone se necessário
-                const success = await window.app.updateProfile({ name, email });
-                if (success) {
-                    showToast('Perfil atualizado!');
-                } else {
-                    showToast('Erro ao atualizar perfil.');
-                }
-            };
-        }
-
-        // --- ALTERAÇÃO DE SENHA ---
-        const btnChangePassword = document.querySelectorAll('.settings-form .btn-save')[1];
-        if (btnChangePassword) {
-            btnChangePassword.onclick = async () => {
-                const currentPassword = document.getElementById('current-pw').value;
-                const newPassword = document.getElementById('new-pw').value;
-                const success = await window.app.changePassword({ currentPassword, newPassword });
-                if (success) {
-                    showToast('Senha alterada com sucesso!');
-                } else {
-                    showToast('Erro ao alterar senha.');
-                }
-            };
-        }
-
-        // --- MODAL E NAVEGAÇÃO SPA (mantém o que já existe, mas pode chamar window.app.updateUI() se necessário) ---
-        // ...
-        // Você pode adicionar outros handlers conforme necessário
-
-        // Funções utilitárias para modal (copiadas do script antigo)
-        const mainSiteContainer = document.getElementById('main-site-container');
-        const authModal = document.getElementById('auth-modal');
-        const registerStep1 = document.getElementById('register-step-1');
-        const registerStep2 = document.getElementById('register-step-2');
-        function hideModal() {
-            mainSiteContainer.classList.remove('blurred');
-            authModal.classList.remove('visible');
-        }
-    </script>
+    <script type="module" src="./js/main.js"></script>
     <script src="./js/views/content.view.js"></script>
 </body>
 

@@ -20,7 +20,7 @@ try {
   console.log(`- container.ts: ${fs.existsSync(containerPath) ? '✅' : '❌'}`);
   
 } catch (error) {
-  console.log('❌ Erro nas importações:', error.message);
+  console.log('❌ Erro nas importações:', error instanceof Error ? error.message : String(error));
 }
 
 // Para executar: npx ts-node src/test-imports.ts 

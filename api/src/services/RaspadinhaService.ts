@@ -1,4 +1,4 @@
-import { Raspadinha, RaspadinhaStatus, IPrize } from '../entities/Raspadinha';
+import { Raspadinha, RaspadinhaStatus } from '../entities/Raspadinha';
 import { RaspadinhaRepository } from '../repositories/RaspadinhaRepository';
 
 export interface IRaspadinhaService {
@@ -9,7 +9,7 @@ export interface IRaspadinhaService {
   delete(id: string): Promise<boolean>;
   getAvailable(): Promise<Raspadinha[]>;
   deactivateExpired(): Promise<void>;
-  generatePrize(raspadinhaId: string): Promise<IPrize | null>;
+  generatePrize(raspadinhaId: string): Promise<number | null>;
 }
 
 export class RaspadinhaService implements IRaspadinhaService {
@@ -25,7 +25,7 @@ export class RaspadinhaService implements IRaspadinhaService {
 
   async create(data: Partial<Raspadinha>): Promise<Raspadinha> {
     // Validações de negócio
-    if (!data.title || !data.price || !data.totalCards || !data.prizes) {
+    if (!data.name || !data.price || !data.availableCards) {
       throw new Error('Dados obrigatórios não fornecidos');
     }
 
@@ -33,25 +33,20 @@ export class RaspadinhaService implements IRaspadinhaService {
       throw new Error('Preço deve ser maior que zero');
     }
 
-    if (data.totalCards <= 0) {
+    if (data.availableCards <= 0) {
       throw new Error('Total de cartas deve ser maior que zero');
     }
 
-    // Validar probabilidades dos prêmios
-    const totalProbability = data.prizes.reduce((sum, prize) => sum + prize.probability, 0);
-    if (totalProbability > 100) {
-      throw new Error('Soma das probabilidades dos prêmios não pode exceder 100%');
-    }
-
     const raspadinha = new Raspadinha({
-      title: data.title,
+      name: data.name,
       description: data.description || '',
-      image: data.image || '',
-      price: data.price,
-      totalCards: data.totalCards,
-      prizes: data.prizes,
-      expiresAt: data.expiresAt
+      price: data.price
     });
+    
+    // Definir availableCards após a criação
+    if (data.availableCards !== undefined) {
+      raspadinha.availableCards = data.availableCards;
+    }
 
     return this.raspadinhaRepository.create(raspadinha);
   }
@@ -67,11 +62,8 @@ export class RaspadinhaService implements IRaspadinhaService {
       throw new Error('Preço deve ser maior que zero');
     }
 
-    if (data.prizes) {
-      const totalProbability = data.prizes.reduce((sum, prize) => sum + prize.probability, 0);
-      if (totalProbability > 100) {
-        throw new Error('Soma das probabilidades dos prêmios não pode exceder 100%');
-      }
+    if (data.availableCards !== undefined && data.availableCards < 0) {
+      throw new Error('Total de cartas não pode ser negativo');
     }
 
     return this.raspadinhaRepository.update(id, data);
@@ -89,32 +81,24 @@ export class RaspadinhaService implements IRaspadinhaService {
     const allRaspadinhas = await this.raspadinhaRepository.findAll();
     
     for (const raspadinha of allRaspadinhas) {
-      if (raspadinha.isExpired() && raspadinha.status === RaspadinhaStatus.ACTIVE) {
+      if (raspadinha.availableCards === 0 && raspadinha.status === RaspadinhaStatus.AVAILABLE) {
         await this.raspadinhaRepository.update(raspadinha.id, { 
-          status: RaspadinhaStatus.EXPIRED 
+          status: RaspadinhaStatus.SOLD 
         });
       }
     }
   }
 
-  async generatePrize(raspadinhaId: string): Promise<IPrize | null> {
+  async generatePrize(raspadinhaId: string): Promise<number | null> {
     const raspadinha = await this.raspadinhaRepository.findById(raspadinhaId);
     if (!raspadinha) {
       return null;
     }
 
-    // Algoritmo simples de geração de prêmio baseado em probabilidade
-    const random = Math.random() * 100;
-    let accumulatedProbability = 0;
-
-    for (const prize of raspadinha.prizes) {
-      accumulatedProbability += prize.probability;
-      if (random <= accumulatedProbability) {
-        return prize;
-      }
-    }
-
-    // Se não ganhou nenhum prêmio
-    return null;
+    // Lógica simples para gerar prêmio baseado no tipo da raspadinha
+    const basePrize = raspadinha.price * 0.1; // 10% do preço como base
+    const randomMultiplier = Math.random() * 2 + 0.5; // Entre 0.5x e 2.5x
+    
+    return Math.round(basePrize * randomMultiplier);
   }
 } 

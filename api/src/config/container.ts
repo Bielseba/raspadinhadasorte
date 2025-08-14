@@ -12,6 +12,7 @@ import { UserController } from '../controllers/UserController';
 import { RaspadinhaController } from '../controllers/RaspadinhaController';
 import { PurchaseController } from '../controllers/PurchaseController';
 import { AuthController } from '../controllers/AuthController';
+import { AdminController } from '../controllers/AdminController';
 import { AuthMiddleware } from '../middlewares/authMiddleware';
 import { initializeDatabase } from './database';
 import { WalletRepository } from '../repositories/WalletRepository';
@@ -34,6 +35,7 @@ export class Container {
   public purchaseController: PurchaseController;
   public walletController: WalletController;
   public transactionController: TransactionController;
+  public adminController: AdminController;
   public authController: AuthController;
   public authMiddleware: AuthMiddleware;
 
@@ -41,6 +43,8 @@ export class Container {
     this.userRepository = new UserRepository();
     this.raspadinhaRepository = new RaspadinhaRepository();
     this.purchaseRepository = new PurchaseRepository();
+    this.walletRepository = new WalletRepository();
+    this.transactionRepository = new TransactionRepository();
 
     this.userService = new UserService(this.userRepository, this.walletRepository, this.transactionRepository);
     this.raspadinhaService = new RaspadinhaService(this.raspadinhaRepository);
@@ -53,6 +57,7 @@ export class Container {
     this.authController = new AuthController(this.authService);
     this.walletController = new WalletController(this.walletRepository, this.transactionRepository);
     this.transactionController = new TransactionController(this.transactionRepository);
+    this.adminController = new AdminController(this.walletRepository, this.transactionRepository, this.userRepository);
 
     this.authMiddleware = new AuthMiddleware(this.authService);
   }

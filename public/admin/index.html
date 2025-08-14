@@ -118,6 +118,29 @@
         .color-input-group input[type="color"] { border: none; background: none; width: 50px; height: 40px; padding: 0; cursor: pointer; }
         .color-input-group input[type="text"] { flex-grow: 1; }
         
+        /* --- ESTILOS PARA UPLOAD DE IMAGEM --- */
+        .file-upload-group { margin-bottom: 15px; }
+        .file-upload-group label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-grey); }
+        .file-upload-wrapper { display: flex; align-items: center; gap: 10px; }
+        .file-input { display: none; }
+        .file-label { padding: 10px 15px; background-color: var(--primary-gold); color: var(--bg-dark); border-radius: 8px; cursor: pointer; font-weight: 600; transition: background-color var(--transition-speed); }
+        .file-label:hover { background-color: var(--primary-gold-hover); }
+        .file-name { color: var(--text-grey); font-size: 0.9rem; }
+        .image-preview-container { margin-top: 10px; }
+        .image-preview-container img { max-width: 200px; max-height: 150px; border-radius: 8px; border: 2px solid #444; }
+        .upload-progress { width: 100%; height: 4px; background-color: #444; border-radius: 2px; margin-top: 10px; overflow: hidden; }
+        .upload-progress-bar { height: 100%; background-color: var(--primary-gold); width: 0%; transition: width 0.3s ease; }
+        
+        /* --- GRID DE RASPADINHAS --- */
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+        .scratch-card { background-color: var(--bg-card); border-radius: var(--border-radius); overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        .card-image { height: 180px; position: relative; display: flex; align-items: center; justify-content: center; }
+        .card-image img { width: 100%; height: 100%; object-fit: cover; }
+        .price-tag { position: absolute; top: 15px; right: 15px; background-color: var(--primary-gold); color: var(--bg-dark); padding: 5px 10px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; }
+        .card-content { padding: 20px; }
+        .card-content h4 { margin-bottom: 10px; font-size: 1.2rem; }
+        .prize-info { color: var(--text-grey); font-size: 0.9rem; margin-bottom: 15px; }
+        
         /* --- RESPONSIVIDADE --- */
         @media (max-width: 992px) {
             .charts-grid { grid-template-columns: 1fr; }
@@ -136,6 +159,7 @@
             .main-header { flex-direction: column; align-items: flex-start; gap: 15px; }
             .main-header h1 { font-size: 1.8rem; }
             .stats-grid { grid-template-columns: 1fr 1fr; }
+            .card-grid { grid-template-columns: 1fr; }
         }
         @media (max-width: 480px) {
             .stats-grid { grid-template-columns: 1fr; }
@@ -168,10 +192,8 @@
                     <li><a href="#" class="nav-link" data-target="users-content"><i class="fas fa-users"></i><span>Usuários</span></a></li>
                     <li><a href="#" class="nav-link" data-target="scratchcards-content"><i class="fas fa-ticket-alt"></i><span>Raspadinhas</span></a></li>
                     <li><a href="#" class="nav-link" data-target="transactions-content"><i class="fas fa-exchange-alt"></i><span>Transações</span></a></li>
-                    <!-- INÍCIO DA ALTERAÇÃO: Links de Envios e Configurações -->
                     <li><a href="#" class="nav-link" data-target="shipping-content"><i class="fas fa-truck"></i><span>Envios</span></a></li>
                     <li><a href="#" class="nav-link" data-target="settings-content"><i class="fas fa-cog"></i><span>Configurações</span></a></li>
-                    <!-- FIM DA ALTERAÇÃO -->
                 </ul>
                 <div class="sidebar-footer"><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i><span>Sair</span></a></div>
             </aside>
@@ -200,16 +222,16 @@
 
                     <!-- Conteúdo de Usuários -->
                     <section id="users-content" class="admin-page">
-                        <div class="card"><div class="table-wrapper"><table class="styled-table" id="users-table"><thead><tr><th>ID</th><th>Nome</th><th>Email</th><th>Saldo</th><th>Data de Cadastro</th><th>Ações</th></tr></thead><tbody><tr><td>#101</td><td>Carlos F.</td><td>carlos.f@email.com</td><td>R$ 150,00</td><td>08/08/2025</td><td class="action-buttons"><button class="edit-user-btn" title="Editar Saldo"><i class="fas fa-edit"></i></button><button title="Ver Histórico"><i class="fas fa-history"></i></button><button title="Bloquear"><i class="fas fa-ban"></i></button></td></tr><tr><td>#102</td><td>Juliana S.</td><td>juliana.s@email.com</td><td>R$ 25,50</td><td>07/08/2025</td><td class="action-buttons"><button class="edit-user-btn" title="Editar Saldo"><i class="fas fa-edit"></i></button><button title="Ver Histórico"><i class="fas fa-history"></i></button><button title="Bloquear"><i class="fas fa-ban"></i></button></td></tr><tr><td>#103</td><td>Marcos A.</td><td>marcos.a@email.com</td><td>R$ 0,00</td><td>07/08/2025</td><td class="action-buttons"><button class="edit-user-btn" title="Editar Saldo"><i class="fas fa-edit"></i></button><button title="Ver Histórico"><i class="fas fa-history"></i></button><button title="Bloquear"><i class="fas fa-ban"></i></button></td></tr></tbody></table></div></div>
+                        <div class="card"><div class="table-wrapper"><table class="styled-table" id="users-table"><thead><tr><th>ID</th><th>Nome</th><th>Email</th><th>Saldo</th><th>Data de Cadastro</th><th>Ações</th></tr></thead><tbody><tr data-user-id="101"><td>#101</td><td>Carlos F.</td><td>carlos.f@email.com</td><td>R$ 150,00</td><td>08/08/2025</td><td class="action-buttons"><button class="edit-user-btn" title="Editar Saldo"><i class="fas fa-edit"></i></button><button title="Ver Histórico"><i class="fas fa-history"></i></button><button title="Bloquear"><i class="fas fa-ban"></i></button></td></tr><tr data-user-id="102"><td>#102</td><td>Juliana S.</td><td>juliana.s@email.com</td><td>R$ 25,50</td><td>07/08/2025</td><td class="action-buttons"><button class="edit-user-btn" title="Editar Saldo"><i class="fas fa-edit"></i></button><button title="Ver Histórico"><i class="fas fa-history"></i></button><button title="Bloquear"><i class="fas fa-ban"></i></button></td></tr><tr data-user-id="103"><td>#103</td><td>Marcos A.</td><td>marcos.a@email.com</td><td>R$ 0,00</td><td>07/08/2025</td><td class="action-buttons"><button class="edit-user-btn" title="Editar Saldo"><i class="fas fa-edit"></i></button><button title="Ver Histórico"><i class="fas fa-history"></i></button><button title="Bloquear"><i class="fas fa-ban"></i></button></td></tr></tbody></table></div></div>
                     </section>
 
                     <!-- Conteúdo de Raspadinhas -->
                     <section id="scratchcards-content" class="admin-page">
                         <button class="btn btn-primary" id="create-scratchcard-btn" style="margin-bottom: 25px; font-size: 1rem;"><i class="fas fa-plus"></i> Criar Nova Raspadinha</button>
                         <div class="card-grid" id="scratchcard-grid">
-                            <div class="scratch-card" data-name="PIX na conta" data-price="0.50" data-prize="PRÊMIOS ATÉ R$ 2000,00" data-color="#4a90e2" data-image=""><div class="card-image" style="background-color:#4a90e2;"><span class="price-tag">R$ 0,50</span></div><div class="card-content"><h4>PIX na conta</h4><p class="prize-info">PRÊMIOS ATÉ R$ 2000,00</p><button class="btn btn-primary edit-scratchcard-btn" style="width:100%; margin-top:10px;">Editar</button></div></div>
-                            <div class="scratch-card" data-name="Me mimei" data-price="5.00" data-prize="PRÊMIOS ATÉ R$ 1000,00" data-color="#c84a8a" data-image=""><div class="card-image" style="background-color:#c84a8a;"><span class="price-tag">R$ 5,00</span></div><div class="card-content"><h4>Me mimei</h4><p class="prize-info">PRÊMIOS ATÉ R$ 1000,00</p><button class="btn btn-primary edit-scratchcard-btn" style="width:100%; margin-top:10px;">Editar</button></div></div>
-                            <div class="scratch-card" data-name="Sonho de Consumo" data-price="20.00" data-prize="PRÊMIOS ATÉ R$ 5000,00" data-color="#555" data-image=""><div class="card-image" style="background-color:#555;"><span class="price-tag">R$ 20,00</span></div><div class="card-content"><h4>Sonho de Consumo</h4><p class="prize-info">PRÊMIOS ATÉ R$ 5000,00</p><button class="btn btn-primary edit-scratchcard-btn" style="width:100%; margin-top:10px;">Editar</button></div></div>
+                            <div class="scratch-card" data-id="1" data-name="PIX na conta" data-price="0.50" data-prize="PRÊMIOS ATÉ R$ 2000,00" data-color="#4a90e2" data-image=""><div class="card-image" style="background-color:#4a90e2;"><span class="price-tag">R$ 0,50</span></div><div class="card-content"><h4>PIX na conta</h4><p class="prize-info">PRÊMIOS ATÉ R$ 2000,00</p><button class="btn btn-primary edit-scratchcard-btn" style="width:100%; margin-top:10px;">Editar</button></div></div>
+                            <div class="scratch-card" data-id="2" data-name="Me mimei" data-price="5.00" data-prize="PRÊMIOS ATÉ R$ 1000,00" data-color="#c84a8a" data-image=""><div class="card-image" style="background-color:#c84a8a;"><span class="price-tag">R$ 5,00</span></div><div class="card-content"><h4>Me mimei</h4><p class="prize-info">PRÊMIOS ATÉ R$ 1000,00</p><button class="btn btn-primary edit-scratchcard-btn" style="width:100%; margin-top:10px;">Editar</button></div></div>
+                            <div class="scratch-card" data-id="3" data-name="Sonho de Consumo" data-price="20.00" data-prize="PRÊMIOS ATÉ R$ 5000,00" data-color="#555" data-image=""><div class="card-image" style="background-color:#555;"><span class="price-tag">R$ 20,00</span></div><div class="card-content"><h4>Sonho de Consumo</h4><p class="prize-info">PRÊMIOS ATÉ R$ 5000,00</p><button class="btn btn-primary edit-scratchcard-btn" style="width:100%; margin-top:10px;">Editar</button></div></div>
                         </div>
                     </section>
                     
@@ -218,36 +240,116 @@
                          <div class="card"><div class="table-wrapper"><table class="styled-table"><thead><tr><th>ID Transação</th><th>Usuário</th><th>Tipo</th><th>Valor</th><th>Status</th><th>Data</th></tr></thead><tbody><tr><td>#PIX-12345</td><td>Juliana S.</td><td>Depósito</td><td style="color: var(--green);">+ R$ 50,00</td><td><span class="status-badge success">Concluído</span></td><td>08/08/2025 10:30</td></tr><tr><td>#PREM-67890</td><td>Carlos F.</td><td>Prêmio</td><td style="color: var(--green);">+ R$ 100,00</td><td><span class="status-badge success">Concluído</span></td><td>08/08/2025 09:15</td></tr><tr><td>#SAQ-54321</td><td>Carlos F.</td><td>Saque</td><td style="color: var(--red);">- R$ 25,00</td><td><span class="status-badge danger">Pendente</span></td><td>07/08/2025 18:00</td></tr></tbody></table></div></div>
                     </section>
                     
-                    <!-- INÍCIO DA ALTERAÇÃO: Conteúdo de Envios -->
+                    <!-- Conteúdo de Envios -->
                     <section id="shipping-content" class="admin-page">
                         <div class="card">
                             <div class="table-wrapper">
                                 <table class="styled-table" id="shipping-table">
                                     <thead><tr><th>Pedido ID</th><th>Usuário</th><th>Prêmio</th><th>Status</th><th>Rastreamento</th><th>Ações</th></tr></thead>
-                                    <tbody>
-                                        <tr data-status="Em Separação" data-tracking=""><td>#ENV-001</td><td>Juliana S.</td><td>Apple iPhone 15 Pro</td><td><span class="status-badge warning">Em Separação</span></td><td>N/A</td><td class="action-buttons"><button class="edit-shipping-btn" title="Atualizar Envio"><i class="fas fa-edit"></i></button></td></tr>
-                                        <tr data-status="Enviado" data-tracking="BR123456789BR"><td>#ENV-002</td><td>Carlos F.</td><td>Fone Bluetooth</td><td><span class="status-badge success">Enviado</span></td><td>BR123456789BR</td><td class="action-buttons"><button class="edit-shipping-btn" title="Atualizar Envio"><i class="fas fa-edit"></i></button></td></tr>
-                                        <tr data-status="Entregue" data-tracking="BR987654321BR"><td>#ENV-003</td><td>Marcos A.</td><td>Air Fryer</td><td><span class="status-badge success">Entregue</span></td><td>BR987654321BR</td><td class="action-buttons"><button class="edit-shipping-btn" title="Atualizar Envio"><i class="fas fa-edit"></i></button></td></tr>
-                                    </tbody>
-                                </table>
+                                    <tbody><tr data-shipping-id="1" data-status="Em Separação" data-tracking=""><td>#ENV-001</td><td>Juliana S.</td><td>Apple iPhone 15 Pro</td><td><span class="status-badge warning">Em Separação</span></td><td>N/A</td><td class="action-buttons"><button class="edit-shipping-btn" title="Atualizar Envio"><i class="fas fa-edit"></i></button></td></tr><tr data-shipping-id="2" data-status="Enviado" data-tracking="BR123456789BR"><td>#ENV-002</td><td>Carlos F.</td><td>Fone Bluetooth</td><td><span class="status-badge success">Enviado</span></td><td>BR123456789BR</td><td class="action-buttons"><button class="edit-shipping-btn" title="Atualizar Envio"><i class="fas fa-edit"></i></button></td></tr><tr data-shipping-id="3" data-status="Entregue" data-tracking="BR987654321BR"><td>#ENV-003</td><td>Marcos A.</td><td>Air Fryer</td><td><span class="status-badge success">Entregue</span></td><td>BR987654321BR</td><td class="action-buttons"><button class="edit-shipping-btn" title="Atualizar Envio"><i class="fas fa-edit"></i></button></td></tr></tbody></table>
                             </div>
                         </div>
                     </section>
-                    <!-- FIM DA ALTERAÇÃO -->
                     
                     <!-- Conteúdo de Configurações -->
                     <section id="settings-content" class="admin-page">
                         <form id="settings-form">
                             <div class="card">
                                 <h2>Identidade Visual</h2>
-                                <div class="form-group"><label for="logo-url">URL do Logo</label><div class="image-preview-group"><input type="text" id="logo-url" value="https://i.imgur.com/link-para-seu-logo.png"><img src="https://i.imgur.com/link-para-seu-logo.png" id="logo-preview" class="image-preview logo-preview" alt="Logo Preview"></div></div>
-                                <div class="form-group"><label for="primary-color">Cor Principal do Site</label><div class="color-input-group"><input type="color" id="primary-color-picker" value="#f5b942"><input type="text" id="primary-color-text" value="#f5b942"></div></div>
+                                <div class="form-group">
+                                    <label for="logo-url">URL do Logo</label>
+                                    <div class="image-preview-group">
+                                        <input type="text" id="logo-url" name="logo-url" value="https://i.imgur.com/link-para-seu-logo.png">
+                                        <img src="https://i.imgur.com/link-para-seu-logo.png" id="logo-preview" class="image-preview logo-preview" alt="Logo Preview">
+                                    </div>
+                                    <div class="file-upload-group">
+                                        <label>Ou fazer upload de uma nova imagem:</label>
+                                        <div class="file-upload-wrapper">
+                                            <input type="file" id="logo-upload" class="file-input" accept="image/*">
+                                            <label for="logo-upload" class="file-label">Escolher Arquivo</label>
+                                            <span class="file-name" id="logo-file-name"></span>
+                                        </div>
+                                        <div class="image-preview-container" id="logo-upload-preview" style="display: none;">
+                                            <img id="logo-upload-img" alt="Preview do Upload">
+                                        </div>
+                                        <div class="upload-progress" id="logo-upload-progress" style="display: none;">
+                                            <div class="upload-progress-bar" id="logo-upload-progress-bar"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="primary-color">Cor Principal do Site</label>
+                                    <div class="color-input-group">
+                                        <input type="color" id="primary-color-picker" value="#f5b942">
+                                        <input type="text" id="primary-color-text" name="primary-color" value="#f5b942">
+                                    </div>
+                                </div>
                             </div>
                             <div class="card">
                                 <h2>Banners do Carrossel</h2>
-                                <div class="form-group"><label for="banner-1-url">URL do Banner 1</label><div class="image-preview-group"><input type="text" id="banner-1-url" value="img/img1.png"><img src="img/img1.png" id="banner-1-preview" class="image-preview" alt="Banner 1 Preview"></div></div>
-                                <div class="form-group"><label for="banner-2-url">URL do Banner 2</label><div class="image-preview-group"><input type="text" id="banner-2-url" value="img/img2.png"><img src="img/img2.png" id="banner-2-preview" class="image-preview" alt="Banner 2 Preview"></div></div>
-                                <div class="form-group"><label for="banner-3-url">URL do Banner 3</label><div class="image-preview-group"><input type="text" id="banner-3-url" value="img/img3.png"><img src="img/img3.png" id="banner-3-preview" class="image-preview" alt="Banner 3 Preview"></div></div>
+                                <div class="form-group">
+                                    <label for="banner-1-url">URL do Banner 1</label>
+                                    <div class="image-preview-group">
+                                        <input type="text" id="banner-1-url" name="banner-1-url" value="img/img1.png">
+                                        <img src="img/img1.png" id="banner-1-preview" class="image-preview" alt="Banner 1 Preview">
+                                    </div>
+                                    <div class="file-upload-group">
+                                        <label>Ou fazer upload de uma nova imagem:</label>
+                                        <div class="file-upload-wrapper">
+                                            <input type="file" id="banner-1-upload" class="file-input" accept="image/*">
+                                            <label for="banner-1-upload" class="file-label">Escolher Arquivo</label>
+                                            <span class="file-name" id="banner-1-file-name"></span>
+                                        </div>
+                                        <div class="image-preview-container" id="banner-1-upload-preview" style="display: none;">
+                                            <img id="banner-1-upload-img" alt="Preview do Upload">
+                                        </div>
+                                        <div class="upload-progress" id="banner-1-upload-progress" style="display: none;">
+                                            <div class="upload-progress-bar" id="banner-1-upload-progress-bar"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="banner-2-url">URL do Banner 2</label>
+                                    <div class="image-preview-group">
+                                        <input type="text" id="banner-2-url" name="banner-2-url" value="img/img2.png">
+                                        <img src="img/img2.png" id="banner-2-preview" class="image-preview" alt="Banner 2 Preview">
+                                    </div>
+                                    <div class="file-upload-group">
+                                        <label>Ou fazer upload de uma nova imagem:</label>
+                                        <div class="file-upload-wrapper">
+                                            <input type="file" id="banner-2-upload" class="file-input" accept="image/*">
+                                            <label for="banner-2-upload" class="file-label">Escolher Arquivo</label>
+                                            <span class="file-name" id="banner-2-file-name"></span>
+                                        </div>
+                                        <div class="image-preview-container" id="banner-2-upload-preview" style="display: none;">
+                                            <img id="banner-2-upload-img" alt="Preview do Upload">
+                                        </div>
+                                        <div class="upload-progress" id="banner-2-upload-progress" style="display: none;">
+                                            <div class="upload-progress-bar" id="banner-2-upload-progress-bar"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="banner-3-url">URL do Banner 3</label>
+                                    <div class="image-preview-group">
+                                        <input type="text" id="banner-3-url" name="banner-3-url" value="img/img3.png">
+                                        <img src="img/img3.png" id="banner-3-preview" class="image-preview" alt="Banner 3 Preview">
+                                    </div>
+                                    <div class="file-upload-group">
+                                        <label>Ou fazer upload de uma nova imagem:</label>
+                                        <div class="file-upload-wrapper">
+                                            <input type="file" id="banner-3-upload" class="file-input" accept="image/*">
+                                            <label for="banner-3-upload" class="file-label">Escolher Arquivo</label>
+                                            <span class="file-name" id="banner-3-file-name"></span>
+                                        </div>
+                                        <div class="image-preview-container" id="banner-3-upload-preview" style="display: none;">
+                                            <img id="banner-3-upload-img" alt="Preview do Upload">
+                                        </div>
+                                        <div class="upload-progress" id="banner-3-upload-progress" style="display: none;">
+                                            <div class="upload-progress-bar" id="banner-3-upload-progress-bar"></div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <button type="submit" class="btn btn-primary" style="font-size: 1rem; width: 100%;">Salvar Alterações</button>
                         </form>
@@ -262,11 +364,28 @@
         <div class="modal-content">
             <div class="modal-header"><h2 id="scratchcard-modal-title">Criar Raspadinha</h2><button class="close-modal-btn">&times;</button></div>
             <form id="scratchcard-form">
-                <div class="form-group"><label for="sc-name">Nome da Raspadinha</label><input type="text" id="sc-name" required></div>
-                <div class="form-group"><label for="sc-price">Preço (Ex: 0.50)</label><input type="number" step="0.01" id="sc-price" required></div>
-                <div class="form-group"><label for="sc-prize">Informação do Prêmio</label><input type="text" id="sc-prize" required></div>
-                <div class="form-group"><label for="sc-image">URL da Imagem de Fundo</label><input type="text" id="sc-image"></div>
-                <div class="form-group"><label for="sc-color">Cor de Fundo (Hex)</label><input type="text" id="sc-color"></div>
+                <div class="form-group"><label for="sc-name">Nome da Raspadinha</label><input type="text" id="sc-name" name="sc-name" required></div>
+                <div class="form-group"><label for="sc-price">Preço (Ex: 0.50)</label><input type="number" step="0.01" id="sc-price" name="sc-price" required></div>
+                <div class="form-group"><label for="sc-prize">Informação do Prêmio</label><input type="text" id="sc-prize" name="sc-prize" required></div>
+                <div class="form-group">
+                    <label for="sc-image">URL da Imagem de Fundo</label>
+                    <input type="text" id="sc-image" name="sc-image">
+                </div>
+                <div class="form-group">
+                    <label>Ou fazer upload de uma nova imagem:</label>
+                    <div class="file-upload-wrapper">
+                        <input type="file" id="sc-image-upload" class="file-input" accept="image/*">
+                        <label for="sc-image-upload" class="file-label">Escolher Arquivo</label>
+                        <span class="file-name" id="sc-image-file-name"></span>
+                    </div>
+                    <div class="image-preview-container" id="sc-image-upload-preview" style="display: none;">
+                        <img id="sc-image-upload-img" alt="Preview do Upload">
+                    </div>
+                    <div class="upload-progress" id="sc-image-upload-progress" style="display: none;">
+                        <div class="upload-progress-bar" id="sc-image-upload-progress-bar"></div>
+                    </div>
+                </div>
+                <div class="form-group"><label for="sc-color">Cor de Fundo (Hex)</label><input type="text" id="sc-color" name="sc-color"></div>
                 <div class="modal-footer"><button type="submit" class="btn btn-primary">Salvar</button></div>
             </form>
         </div>
@@ -286,7 +405,7 @@
         </div>
     </div>
     
-    <!-- INÍCIO DA ALTERAÇÃO: Modal de Envio -->
+    <!-- Modal de Envio -->
     <div id="shipping-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header"><h2 id="shipping-modal-title">Atualizar Envio</h2><button class="close-modal-btn">&times;</button></div>
@@ -296,7 +415,7 @@
             <form id="shipping-form">
                 <div class="form-group">
                     <label for="shipping-status">Status do Envio</label>
-                    <select id="shipping-status">
+                    <select id="shipping-status" name="shipping-status">
                         <option value="Pedido Recebido">Pedido Recebido</option>
                         <option value="Em Separação">Em Separação</option>
                         <option value="Enviado">Enviado</option>
@@ -305,14 +424,16 @@
                 </div>
                 <div class="form-group">
                     <label for="shipping-tracking">Código de Rastreamento</label>
-                    <input type="text" id="shipping-tracking" placeholder="Insira o código aqui">
+                    <input type="text" id="shipping-tracking" name="shipping-tracking" placeholder="Insira o código aqui">
                 </div>
                 <div class="modal-footer"><button type="submit" class="btn btn-primary">Salvar Alterações</button></div>
             </form>
         </div>
     </div>
-    <!-- FIM DA ALTERAÇÃO -->
 
-    <script type="module" src="/admin/index.js"></script>
+    <script type="module" src="admin/config.js"></script>
+    <script type="module" src="admin/app.js"></script>
+    <script type="module" src="admin/main.js"></script>
+    <script type="module" src="admin/imageManager.js"></script>
 </body>
 </html>
